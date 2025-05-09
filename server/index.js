@@ -3,7 +3,7 @@ const TelegramBot = require('node-telegram-bot-api');
 
 
 const token = process.env.HTTPAPI;
-const webAppUrl = 'https://planetasport-bot.netlify.app';
+const webAppUrl = 'https://tg-bot-planetasport2.netlify.app';
 
 
 const bot = new TelegramBot(token, { polling: true });
@@ -29,5 +29,21 @@ bot.on('message', async (msg) => {
                 ]
             }
         })
+    }
+
+    if (msg?.web_app_data?.data) {
+        try {
+            const data = JSON.parse(msg?.web_app_data.data)
+
+            await bot.sendMessage(chatId, 'Спасибо за обратную свзять!')
+            await bot.sendMessage(chatId, 'Ваша страна: ' + data.country);
+            await bot.sendMessage(chatId, 'Ваша удица: ' + data.street);
+
+            setTimeout(async () => {
+                await bot.sendMessage(chatId, 'Всю информацию вы получите в этом чате')
+            }, 3000)
+        } catch (e) {
+            console.log(e);
+        }
     }
 });
