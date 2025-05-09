@@ -3,7 +3,7 @@ const TelegramBot = require('node-telegram-bot-api');
 
 
 const token = process.env.HTTPAPI;
-const webAppUrl = 'https://ya.ru';
+const webAppUrl = 'https://planetasport-bot.netlify.app';
 
 
 const bot = new TelegramBot(token, { polling: true });
@@ -17,7 +17,7 @@ bot.on('message', async (msg) => {
         await bot.sendMessage(chatId, 'Ниже появится кнопка, заполни форму', {
             reply_markup: {
                 keyboard: [
-                    [{ text: 'Заполни форму', web_app: { url: webAppUrl } }]
+                    [{ text: 'Заполни форму', web_app: { url: webAppUrl + '/form' } }]
                 ]
             }
         })
