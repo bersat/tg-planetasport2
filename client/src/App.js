@@ -5,6 +5,7 @@ import Header from "./components/Header/Header";
 import { Routes, Route } from 'react-router-dom';
 import ProductList from "./components/ProductList/ProductList";
 import Form from "./components/Form/Form";
+import Auth from "./pages/Auth/Auth";
 
 function App() {
   const { tg } = useTelegram();
@@ -19,7 +20,8 @@ function App() {
       <Header />
 
       <Routes>
-        <Route index element={<ProductList />} />
+        <Route index element={<Auth />} />
+        <Route path={'productList'} element={<ProductList />} />
         <Route path={'form'} element={<Form />} />
       </Routes>
 
