@@ -1,79 +1,91 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTelegram } from '../../hooks/useTelegram';
+import './auth.css';
 
 const Auth = () => {
-  const [status, setStatus] = useState('Ожидание...');
-  const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const { tg, user: tgUser } = useTelegram();
+  const [mode, setMode] = useState('login'); // 'login' или 'register'
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [status, setStatus] = useState('');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!tgUser) {
-      setStatus('Ошибка: не удалось получить данные Telegram');
-      return;
-    }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const url = `http://localhost:5000/api/${mode === 'login' ? 'login' : 'register'}`;
 
-    setUser(tgUser);
-    tg.MainButton.setText('Войти в магазин');
-    tg.MainButton.hide();
-
-    const handleAuth = async () => {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/auth`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            telegram_id: tgUser.id,
-            username: tgUser.username,
-            first_name: tgUser.first_name,
-            last_name: tgUser.last_name,
-          }),
-        });
-
-        const data = await response.json();
-        if (response.ok) {
-          setStatus(data.message);
-          localStorage.setItem('auth_token', data.token);
-          setIsAuthenticated(true);
-          tg.MainButton.show();
-        } else {
-          setStatus('Ошибка: ' + data.message);
-          tg.MainButton.hide();
-        }
-      } catch (err) {
-        console.error('Ошибка при подключении к серверу:', err);
-        setStatus('Ошибка при подключении к серверу');
-        tg.MainButton.hide();
-      }
-    };
-
-    tg.MainButton.onClick(handleAuth);
-
-    return () => {
-      tg.MainButton.offClick(handleAuth);
-      tg.MainButton.hide();
-    };
-  }, [tg, tgUser]);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      tg.MainButton.onClick(() => {
-        navigate('/productList');
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(mode === 'login'
+          ? { email, password }
+          : { email, password, name }),
       });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setStatus(data.message || 'Ошибка');
+        return;
+      }
+
+      setStatus(data.message || 'Успешно');
+      if (mode === 'login' && data.token) {
+        localStorage.setItem('auth_token', data.token);
+        navigate('/productList');
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus('Ошибка соединения с сервером');
     }
-  }, [isAuthenticated, tg, navigate]);
+  };
 
   return (
-    <div style={{ padding: 20, textAlign: 'center' }}>
-      <h2>Добро пожаловать!</h2>
-      {user && (
-        <p>
-          Вы вошли как: <b>{user.first_name} {user.last_name || ''}</b> (@{user.username})
-        </p>
-      )}
-      <p>{status}</p>
+    <div className="auth-wrapper">
+      <form className="auth-form" onSubmit={handleSubmit}>
+        <h2>{mode === 'login' ? 'Вход' : 'Регистрация'}</h2>
+
+        {mode === 'register' && (
+          <input
+            type="text"
+            placeholder="Имя"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        )}
+
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+
+        <input
+          type="password"
+          placeholder="Пароль"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+
+        <button type="submit">
+          {mode === 'login' ? 'Войти' : 'Зарегистрироваться'}
+        </button>
+
+        <p className="status">{status}</p>
+
+        <div className="switch-mode">
+          {mode === 'login' ? (
+            <p>Нет аккаунта? <span onClick={() => setMode('register')}>Регистрация</span></p>
+          ) : (
+            <p>Уже есть аккаунт? <span onClick={() => setMode('login')}>Войти</span></p>
+          )}
+        </div>
+      </form>
     </div>
   );
 };
