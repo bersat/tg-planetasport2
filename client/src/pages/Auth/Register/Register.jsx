@@ -1,48 +1,36 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import '../auth.css'; // или просто подключи global.css, если все в одном
+import '../auth.css';
+import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
 
 const Register = () => {
-  const [full_name, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [form, setForm] = useState({
+    full_name: '',
+    email: '',
+    phone: '',
+    password: ''
+  });
   const [status, setStatus] = useState('');
   const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (password !== confirmPassword) {
-      setStatus('Пароли не совпадают');
-      return;
-    }
-
     try {
-      const res = await fetch('http://localhost:5000/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          full_name,
-          email,
-          phone,
-          password
-        })
-      });
+      const res = await axios.post('http://localhost:5000/api/register', form);
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setStatus(data.message || 'Ошибка');
-        return;
+      if (res.status === 201) {
+        setStatus('Регистрация прошла успешно. Перенаправляем...');
+        setTimeout(() => navigate('/login'), 1500);
+      } else {
+        setStatus(res.data.message || 'Ошибка регистрации');
       }
-
-      setStatus('Регистрация прошла успешно');
-      navigate('/');
     } catch (err) {
-      console.error(err);
-      setStatus('Ошибка соединения с сервером');
+      setStatus(err.response?.data?.message || 'Ошибка соединения с сервером');
     }
   };
 
@@ -51,78 +39,47 @@ const Register = () => {
       <form className="auth-form" onSubmit={handleSubmit}>
         <h2>Регистрация</h2>
 
-        <label>
-          ФИО<span className="required">*</span>
-        </label>
+        <label>ФИО<span className="required">*</span></label>
         <input
+          name="full_name"
           type="text"
-          value={full_name}
-          onChange={(e) => setFullName(e.target.value)}
           required
+          onChange={handleChange}
+          value={form.full_name}
         />
 
-        <label>
-          Email<span className="required">*</span>
-        </label>
+        <label>Email<span className="required">*</span></label>
         <input
+          name="email"
           type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
           required
+          onChange={handleChange}
+          value={form.email}
         />
 
-        <label>
-          Телефон<span className="required">*</span>
-        </label>
+        <label>Телефон<span className="required">*</span></label>
         <input
+          name="phone"
           type="tel"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
           required
+          onChange={handleChange}
+          value={form.phone}
         />
 
-        <label>
-          Пароль<span className="required">*</span>
-        </label>
+        <label>Пароль<span className="required">*</span></label>
         <input
+          name="password"
           type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
           required
-        />
-
-        <label>
-          Подтверждение пароля<span className="required">*</span>
-        </label>
-        <input
-          type="password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
+          onChange={handleChange}
+          value={form.password}
         />
 
         <button type="submit">Зарегистрироваться</button>
-
         <p className="status">{status}</p>
-        <p className="note">
-          <span className="required">*</span> — обязательные поля
-        </p>
-        <p style={{ textAlign: 'center' }}>
-          Уже есть аккаунт?{' '}
-          <button
-            type="button"
-            onClick={() => navigate('/login')}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--button-bg)',
-              cursor: 'pointer',
-              textDecoration: 'underline',
-              padding: 0,
-            }}
-          >
-            Войти
-          </button>
+        <p className="note"><span className="required">*</span> — обязательные поля</p>
+        <p style={{ marginTop: '1rem', textAlign: 'center' }}>
+          Уже есть аккаунт? <Link to="/login" style={{ color: '#c62828' }}>Войти</Link>
         </p>
       </form>
     </div>

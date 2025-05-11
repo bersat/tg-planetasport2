@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import '../auth.css';
-import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
 
 const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -16,21 +16,26 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const res = await fetch('http://localhost:5000/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
+      const res = await axios.post('http://localhost:5000/api/login', form);
 
-      const data = await res.json();
-      if (res.ok && data.token) {
-        localStorage.setItem('auth_token', data.token);
-        navigate('/productList');
+      if (res.data.token) {
+        localStorage.setItem('auth_token', res.data.token);
+
+        // Расшифровка токена для получения роли (если нужно на клиенте)
+        const [, payload] = res.data.token.split('.');
+        const decoded = JSON.parse(atob(payload));
+        const role = decoded.role;
+
+        if (role === 'admin') {
+          navigate('/admin/products'); // например, страница для админов
+        } else {
+          navigate('/productList');
+        }
       } else {
-        setStatus(data.message || 'Ошибка');
+        setStatus(res.data.message || 'Неверный логин или пароль');
       }
     } catch (err) {
-      setStatus('Ошибка соединения с сервером');
+      setStatus(err.response?.data?.message || 'Ошибка соединения с сервером');
     }
   };
 
@@ -47,10 +52,10 @@ const Login = () => {
 
         <button type="submit">Войти</button>
         <p className="status">{status}</p>
-              <p className="note"><span className="required">*</span> — обязательные поля</p>
-              <p style={{ marginTop: '1rem', textAlign: 'center' }}>
-  Нет аккаунта? <Link to="/register" style={{ color: '#c62828' }}>Зарегистрироваться</Link>
-</p>
+        <p className="note"><span className="required">*</span> — обязательные поля</p>
+        <p style={{ marginTop: '1rem', textAlign: 'center' }}>
+          Нет аккаунта? <Link to="/register" style={{ color: '#c62828' }}>Зарегистрироваться</Link>
+        </p>
       </form>
     </div>
   );
