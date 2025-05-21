@@ -1,0 +1,158 @@
+/* Стили для шапки сайта */
+
+.top-search-bar {
+  position: fixed;
+  top: -100px;
+  left: 0;
+  right: 0;
+  background-color: white;
+  padding: 15px 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  transition: top 0.3s ease;
+  z-index: 1100; /* выше шапки */
+}
+
+.top-search-bar.active {
+  top: 0;
+}
+
+.top-search-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.top-search-form input {
+  flex: 1;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.top-search-form button {
+  padding: 10px 16px;
+  background-color: #0077cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.top-search-form .close-search {
+  background-color: transparent;
+  color: #333;
+  font-size: 20px;
+  padding: 0 8px;
+}
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #0077cc;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  z-index: 1000; /* Устанавливаем выше, чем у сайдбара */
+}
+
+.header-left button,
+.header-right button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: white;
+}
+
+.header-center h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+/* Поисковая строка */
+.search-bar {
+  position: fixed;
+  top: 60px; /* Чтобы поиск не перекрывал шапку */
+  left: 0;
+  right: 0;
+  background-color: #ffffff; /* Белый фон для поисковой строки */
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 10;
+  transition: top 0.3s ease;
+}
+
+.search-bar input {
+  width: 80%;
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.search-bar button {
+  padding: 8px 16px;
+  background-color: #0077cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.search-bar button:hover {
+  background-color: #005fa3;
+}
+
+.search-bar button:focus {
+  outline: none;
+}
+
+/* Убираем фокус с поля ввода */
+.search-bar input:focus {
+  outline: none;
+  border-color: #0077cc;
+}
+
+/* Сайдбар */
+.sidebar-container {
+  position: fixed;
+  top: 0;
+  left: -250px; /* Изначально скрыт */
+  width: 250px;
+  height: 100%;
+  background-color: #333;
+  transition: left 0.3s ease; /* Плавная анимация */
+  z-index: 50;
+}
+
+.sidebar-container.open {
+  left: 0; /* Сдвигаем на 0 при открытии */
+}
+
+.sidebar-container .sidebar {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.sidebar-container .sidebar a {
+  color: white;
+  text-decoration: none;
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 18px;
+  transition: background-color 0.3s ease;
+}
+
+.sidebar-container .sidebar a:hover {
+  background-color: #444;
+}
+

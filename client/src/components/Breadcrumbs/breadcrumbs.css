@@ -1,0 +1,18 @@
+.breadcrumbs {
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.breadcrumb-link {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  font-weight: bold;
+  padding: 0;
+}
+
+.breadcrumb-link:disabled {
+  color: #333;
+  cursor: default;
+}

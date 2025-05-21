@@ -1,0 +1,56 @@
+/* Sidebar.css */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -250px; /* Начальная позиция за пределами экрана */
+  width: 250px;
+  height: 100%;
+  background-color: #333;
+  color: white;
+  padding: 20px;
+  transition: left 0.3s ease; /* Плавное перемещение */
+  z-index: 1000;
+}
+
+/* Стили для затемненного фона */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+.sidebar nav ul {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.sidebar nav ul li {
+  margin: 0; /* gap уже задаёт отступ */
+}
+
+.sidebar nav ul li a {
+  text-decoration: none;
+  color: white;
+  font-size: 18px;
+}
+
+.sidebar.open {
+  left: 0; /* Когда sidebar открыт, он будет выезжать */
+}
+
+.sidebar .close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 30px;
+  cursor: pointer;
+  color: white;
+}

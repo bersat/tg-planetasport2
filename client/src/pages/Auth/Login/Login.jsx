@@ -22,7 +22,7 @@ const Login = () => {
         localStorage.setItem('auth_token', res.data.token);
 
         // Расшифровка токена для получения роли (если нужно на клиенте)
-        const [, payload] = res.data.token.split('.');
+        const [payload] = res.data.token.split('.');
         const decoded = JSON.parse(atob(payload));
         const role = decoded.role;
 

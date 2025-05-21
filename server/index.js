@@ -5,9 +5,7 @@ const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const db = require('./db'); // PostgreSQL pool
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+
 
 const app = express();
 app.use(cors());
@@ -83,6 +81,89 @@ app.post('/api/login', async (req, res) => {
     } catch (err) {
         console.error('Ошибка при входе:', err);
         res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
+// Получение всех категорий
+app.get('/api/categories', async (req, res) => {
+    try {
+        const result = await db.query('SELECT * FROM categories');
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching categories:', err.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// Получение всех полов
+app.get('/api/genders', async (req, res) => {
+    try {
+        const result = await db.query('SELECT * FROM genders');
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching genders:', err.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// Получение типов товаров в зависимости от выбранной категории
+app.get('/api/types', async (req, res) => {
+    const { category } = req.query;
+    if (!category) {
+        return res.status(400).json({ error: 'Category is required' });
+    }
+
+    try {
+        const query = `
+      SELECT types.id AS id, types.name AS name
+      FROM types
+      JOIN categories c ON types.category_id = c.id
+      WHERE c.name = $1
+    `;
+        const result = await db.query(query, [category]);
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching types:', err.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
+
+app.get('/api/products', async (req, res) => {
+    const { category, gender, type } = req.query;
+
+    let query = `
+    SELECT p.*
+    FROM products p
+    JOIN types t ON p.type_id = t.id
+    JOIN categories c ON t.category_id = c.id
+    JOIN genders g ON p.gender_id = g.id
+    WHERE 1=1
+  `;
+
+    const values = [];
+    let count = 1;
+
+    if (category) {
+        query += ` AND c.name = $${count++}`;
+        values.push(category);
+    }
+    if (gender) {
+        query += ` AND g.name = $${count++}`;
+        values.push(gender);
+    }
+    if (type) {
+        query += ` AND t.name = $${count++}`;
+        values.push(type);
+    }
+
+    try {
+        const result = await db.query(query, values);
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching products:', err.message);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 

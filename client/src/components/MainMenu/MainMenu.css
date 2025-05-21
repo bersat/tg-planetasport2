@@ -1,0 +1,25 @@
+.main-menu {
+  display: flex;
+  justify-content: center;
+  background-color: #333;
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+  z-index: 1000;
+}
+
+.main-menu ul {
+  list-style-type: none;
+  padding: 10px 0;
+  display: flex;
+  gap: 20px;
+}
+
+.main-menu ul li {
+  margin: 0;
+}
+
+.main-menu ul li a {
+  color: white;
+  text-decoration: none;
+}
