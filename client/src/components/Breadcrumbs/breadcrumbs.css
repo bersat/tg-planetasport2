@@ -6,13 +6,13 @@
 .breadcrumb-link {
   background: none;
   border: none;
-  color: #007bff;
+  color: #dfdfdf;
   cursor: pointer;
   font-weight: bold;
   padding: 0;
 }
 
 .breadcrumb-link:disabled {
-  color: #333;
+  color: #d20c0c;
   cursor: default;
 }

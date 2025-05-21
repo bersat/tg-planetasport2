@@ -11,6 +11,7 @@ import { CartProvider } from './components/CartContext';
 import Header from "./components/Header/Header";
 import MainMenu from "./components/MainMenu/MainMenu";
 import Footer from "./components/Footer/Footer";
+import ProductPage from "./pages/ProductPage/ProductPage";
 
 
 function App() {
@@ -22,18 +23,19 @@ function App() {
 
   return (
     <div className="App">
-      <Header />
-      <MainMenu />
       <CartProvider>
+        <Header />
+        <MainMenu />
         <Routes>
           <Route index element={<Home />} />
           <Route path={'login'} element={<Login />} />
           <Route path={'register'} element={<Register />} />
           <Route path={'catalog'} element={<Catalog />} />
           <Route path={'cart'} element={<Cart />} />
+          <Route path="/product/:productId" element={<ProductPage />} />
         </Routes>
+        <Footer />
       </CartProvider>
-      <Footer />
     </div>
   );
 }

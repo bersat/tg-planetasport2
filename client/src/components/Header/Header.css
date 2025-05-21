@@ -5,11 +5,11 @@
   top: -100px;
   left: 0;
   right: 0;
-  background-color: white;
+  background-color: rgb(23, 22, 22);
   padding: 15px 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   transition: top 0.3s ease;
-  z-index: 1100; /* выше шапки */
+  z-index: 1100;
 }
 
 .top-search-bar.active {
@@ -28,11 +28,13 @@
   font-size: 16px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  background-color: #1a1a1a;
+  color: white;
 }
 
 .top-search-form button {
   padding: 10px 16px;
-  background-color: #0077cc;
+  background-color: #d20c0c;
   color: white;
   border: none;
   border-radius: 4px;
@@ -40,11 +42,22 @@
   font-size: 16px;
 }
 
+.top-search-form button:hover {
+  background-color: #a31600;
+}
+
+/* Стиль кнопки закрытия поиска (крестика) */
 .top-search-form .close-search {
-  background-color: transparent;
-  color: #333;
-  font-size: 20px;
-  padding: 0 8px;
+  background: transparent;
+  color: white;
+  font-size:18px;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0px;
+}
+
+.top-search-form .close-search:hover {
+  color: #ccc;
 }
 
 .header {
@@ -52,20 +65,20 @@
   top: 0;
   left: 0;
   right: 0;
-  background-color: #0077cc;
+  background-color: #131314;
   color: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
-  z-index: 1000; /* Устанавливаем выше, чем у сайдбара */
+  padding: 10px 2px;
+  z-index: 1000;
 }
 
 .header-left button,
 .header-right button {
   background: none;
   border: none;
-  font-size: 24px;
+  font-size: 16px;
   cursor: pointer;
   color: white;
 }
@@ -75,66 +88,62 @@
   font-size: 24px;
 }
 
-/* Поисковая строка */
-.search-bar {
-  position: fixed;
-  top: 60px; /* Чтобы поиск не перекрывал шапку */
-  left: 0;
-  right: 0;
-  background-color: #ffffff; /* Белый фон для поисковой строки */
-  padding: 10px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.search-suggestions {
+  position: absolute;
+  background: rgb(31, 30, 30);
+  border: 1px solid #292828;
+  width: 89.3%;
+  max-height: 300px;
+  overflow-y: auto;
   z-index: 10;
-  transition: top 0.3s ease;
+  margin-top: 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.search-bar input {
-  width: 80%;
-  padding: 8px;
-  font-size: 16px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.search-bar button {
-  padding: 8px 16px;
-  background-color: #0077cc;
-  color: white;
-  border: none;
-  border-radius: 4px;
+.suggestion-item {
+  display: flex;
+  padding: 10px;
+  border-bottom: 1px solid #212121;
   cursor: pointer;
+  color: white;
 }
 
-.search-bar button:hover {
-  background-color: #005fa3;
+.suggestion-item:hover {
+  background-color: #2a2a2a;
 }
 
-.search-bar button:focus {
-  outline: none;
+.suggestion-item img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  margin-right: 10px;
 }
 
-/* Убираем фокус с поля ввода */
-.search-bar input:focus {
-  outline: none;
-  border-color: #0077cc;
+.suggestion-info .name {
+  font-weight: 500;
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.suggestion-info .price {
+  color: #bbb;
+  font-size: 14px;
 }
 
 /* Сайдбар */
 .sidebar-container {
   position: fixed;
   top: 0;
-  left: -250px; /* Изначально скрыт */
+  left: -250px;
   width: 250px;
   height: 100%;
   background-color: #333;
-  transition: left 0.3s ease; /* Плавная анимация */
+  transition: left 0.3s ease;
   z-index: 50;
 }
 
 .sidebar-container.open {
-  left: 0; /* Сдвигаем на 0 при открытии */
+  left: 0;
 }
 
 .sidebar-container .sidebar {
@@ -155,4 +164,3 @@
 .sidebar-container .sidebar a:hover {
   background-color: #444;
 }
-

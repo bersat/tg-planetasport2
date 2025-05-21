@@ -167,6 +167,41 @@ app.get('/api/products', async (req, res) => {
     }
 });
 
+// API для поиска товаров
+app.get('/api/products/search', async (req, res) => {
+    const query = req.query.q;
+    if (!query || query.length < 2) {
+        return res.json([]);
+    }
+
+    try {
+        const result = await db.query(
+            `SELECT id, title, price, image_url FROM products WHERE LOWER(title) LIKE LOWER($1) LIMIT 10`,
+            [`%${query}%`]
+        );
+        res.json(result.rows);  // Возвращаем найденные товары
+    } catch (error) {
+        console.error('Ошибка при поиске:', error);
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
+// server.js
+app.get('/api/products/:productId', async (req, res) => {
+    const { productId } = req.params;
+    try {
+        const result = await db.query('SELECT * FROM products WHERE id = $1', [productId]);
+        if (result.rows.length > 0) {
+            res.json(result.rows[0]); // Возвращаем данные о товаре
+        } else {
+            res.status(404).json({ error: 'Товар не найден' });
+        }
+    } catch (err) {
+        console.error('Ошибка при получении товара:', err);
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
 
 
 // 🚀 Настройка порта и запуск сервера

@@ -27,9 +27,9 @@ const Login = () => {
         const role = decoded.role;
 
         if (role === 'admin') {
-          navigate('/admin/products'); // например, страница для админов
+          navigate('/admin/adminpanel'); // например, страница для админов
         } else {
-          navigate('/productList');
+          navigate('/catalog');
         }
       } else {
         setStatus(res.data.message || 'Неверный логин или пароль');

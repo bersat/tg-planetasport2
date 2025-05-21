@@ -1,6 +1,15 @@
+/* Общие стили для каталога */
+body {
+  background-color: #1e1e1e; /* Тёмно-серый фон */
+  color: white; /* Белый текст */
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
 .catalog {
   padding: 20px;
-  max-width: 960px;
+  max-width: 1200px;
   margin: auto;
   margin-top: 100px;
   margin-bottom: 100px;
@@ -13,66 +22,99 @@
 button {
   margin: 5px;
   padding: 8px 16px;
-  background-color: #0077cc;
+  background-color: #e63946; /* Красный цвет для кнопок */
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #d62828; /* Тёмный красный при наведении */
 }
 
 button.reset {
-  background-color: #999;
+  background-color: #999; /* Серый для сброса */
 }
 
+button.reset:hover {
+  background-color: #777; /* Более тёмный серый при наведении */
+}
+
+/* Стили для списка товаров */
 .product-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 0; /* Убираем промежутки между карточками */
+  justify-content: flex-start; /* Располагаем карточки по левому краю */
 }
 
 .product {
-  width: 185px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 10px;
+  width: calc(50% - 10px); /* Делаем карточки шириной 50% с учетом отступов */
+  height: 380px; /* Высота карточки уменьшена */
+  border: 1px solid #4d4b4b; /* Бордер серого цвета */
+  padding: 10px; /* Уменьшены отступы внутри карточки */
   text-align: center;
+  background-color: #292828; /* Фон карточки */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Контент внутри карточки распределяется по вертикали */
+  transition: transform 0.3s ease; /* Плавное увеличение при наведении */
+}
+
+.product:hover {
+  transform: scale(1.05); /* Увеличение карточки при наведении */
 }
 
 .product img {
   max-width: 100%;
-  height: 150px;
+  height: 150px; /* Высота изображения уменьшена */
   object-fit: cover;
+  border-radius: 4px; /* Сглаживание углов изображения */
 }
 
 .price {
   display: block;
   margin-top: 10px;
   font-weight: bold;
-  color: green;
+  color: #2a9d8f; /* Цвет для цены */
 }
 
 .product-actions {
   display: flex;
-  justify-content: space-between;
+  justify-content: center; /* Центрируем действия в карточке */
   align-items: center;
-  margin-top: 10px;
+  margin-top: 20px; /* Добавляем отступ сверху */
+  flex-grow: 1; /* Позволяет кнопке занимать центральное положение */
 }
 
-.quantity-controls {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.quantity-controls button {
-  width: 26px;
-  height: 26px;
-  font-size: 14px;
-  padding: 0;
-}
-
-.product-actions button.add-to-cart {
-  padding: 6px 10px;
-  font-size: 14px;
+.product-actions button.view-details {
+  padding: 8px 35px; /* Увеличим размер кнопки */
+  font-size: 16px; /* Увеличим размер текста */
   white-space: nowrap;
+  background-color: #e63946; /* Красный для кнопки добавления в корзину */
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.product-actions button.view-details:hover {
+  background-color: #d62828; /* Тёмный красный при наведении */
+}
+
+/* Медиа-запросы для мобильных устройств */
+
+/* Для экранов с шириной до 768px (планшеты и небольшие экраны) */
+@media (max-width: 768px) {
+  .product {
+    width: calc(50% - 10px); /* Делаем 2 карточки в ряду */
+  }
+}
+
+/* Для экранов с шириной до 480px (мобильные устройства) */
+@media (max-width: 480px) {
+  .product {
+    width: 50%; /* Для мобильных карточки на всю ширину экрана */
+  }
 }

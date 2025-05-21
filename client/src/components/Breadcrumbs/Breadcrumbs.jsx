@@ -1,22 +1,30 @@
 import React from 'react';
 import './breadcrumbs.css';
 
-function Breadcrumbs({ selectedCategory, selectedGender, selectedType, onClickLevel }) {
+function Breadcrumbs({ selectedCategory, selectedGender, selectedType, selectedProduct, onClickLevel }) {
   const items = [
     { name: 'Главная', level: 'home' },
     { name: 'Каталог', level: 'catalog' },
   ];
 
+  // Добавляем категорию, если она есть
   if (selectedCategory) {
     items.push({ name: selectedCategory, level: 'category' });
   }
 
+  // Добавляем пол, если он есть
   if (selectedGender) {
     items.push({ name: selectedGender, level: 'gender' });
   }
 
+  // Добавляем тип, если он есть
   if (selectedType) {
     items.push({ name: selectedType, level: 'type' });
+  }
+
+  // Добавляем товар, если он выбран
+  if (selectedProduct) {
+    items.push({ name: selectedProduct, level: 'product' });
   }
 
   return (
