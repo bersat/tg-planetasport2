@@ -65,12 +65,12 @@
   top: 0;
   left: 0;
   right: 0;
-  background-color: #131314;
+  background-color: #1b1a1a;
   color: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 2px;
+  padding: 4px 2px;
   z-index: 1000;
 }
 
@@ -85,7 +85,7 @@
 
 .header-center h1 {
   margin: 0;
-  font-size: 24px;
+  font-size: 20px;
 }
 
 .search-suggestions {

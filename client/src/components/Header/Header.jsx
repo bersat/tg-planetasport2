@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // 🔹 добавлен импорт
 import Sidebar from '../Sidebar/Sidebar';
 import { FaSearch, FaBars, FaTimes } from 'react-icons/fa';
 import './Header.css';
@@ -9,6 +10,8 @@ function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const navigate = useNavigate(); // 🔹 добавлен хук навигации
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const closeSidebar = () => setIsSidebarOpen(false);
@@ -26,7 +29,6 @@ function Header() {
 
     if (query.length >= 2) {
       try {
-        // Отправляем запрос на сервер для поиска товаров
         const response = await fetch(`http://localhost:5000/api/products/search?q=${encodeURIComponent(query)}`);
         const results = await response.json();
         setSearchResults(results);
@@ -47,6 +49,14 @@ function Header() {
     setShowSuggestions(false);
   };
 
+  // 🔹 Обработчик перехода на страницу товара
+  const handleSuggestionClick = (product) => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setShowSuggestions(false);
+    navigate(`/product/${product.id}`); // переход на страницу товара
+  };
+
   return (
     <>
       {/* Поисковая панель */}
@@ -58,17 +68,21 @@ function Header() {
             value={searchQuery}
             onChange={handleSearchChange}
           />
-          <button type="submit">Найти</button>
           <button type="button" className="close-search" onClick={closeSearch}>
             <FaTimes />
           </button>
         </form>
 
-        {/* Блок с подсказками */}
+        {/* 🔹 Блок с подсказками */}
         {showSuggestions && searchResults.length > 0 && (
           <div className="search-suggestions">
             {searchResults.map((item) => (
-              <div className="suggestion-item" key={item.id}>
+              <div
+                key={item.id}
+                className="suggestion-item"
+                onClick={() => handleSuggestionClick(item)}
+                style={{ cursor: 'pointer' }}
+              >
                 <img src={item.image_url} alt={item.title} />
                 <div className="suggestion-info">
                   <div className="name">{item.title}</div>

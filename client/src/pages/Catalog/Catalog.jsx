@@ -113,14 +113,15 @@ function Catalog() {
     if (selectedType) {
       title = `${selectedType}`;
     }
-
-    const productsCount = products.length;
-    return `${title} (${productsCount})`;
+    return `${title}`;
   };
 
   return (
     <div className="catalog">
-      <h1>{renderHeader()}</h1> {/* Отображаем динамичный заголовок */}
+      <h1 className="renderHeader">
+  {renderHeader()} <span className="product-count">{products.length}</span>
+</h1>
+
 
       <Breadcrumbs
         selectedCategory={selectedCategory}
@@ -147,7 +148,7 @@ function Catalog() {
         <div className="step step-categories">
           <h3>Выберите категорию:</h3>
           {categories.map(cat => (
-            <button key={cat.id} onClick={() => handleCategorySelect(cat.name)}>
+            <button className="step-button" key={cat.id} onClick={() => handleCategorySelect(cat.name)}>
               {cat.name}
             </button>
           ))}
@@ -157,10 +158,9 @@ function Catalog() {
       {/* Шаг 2: Пол */}
       {selectedCategory && !selectedGender && (
         <div className="step step-genders">
-          <h3>Категория: {selectedCategory}</h3>
           <h3>Выберите пол:</h3>
           {genders.map(g => (
-            <button key={g.id} onClick={() => handleGenderSelect(g.name)}>
+            <button className="step-button" key={g.id} onClick={() => handleGenderSelect(g.name)}>
               {g.name}
             </button>
           ))}
@@ -170,10 +170,9 @@ function Catalog() {
       {/* Шаг 3: Тип */}
       {selectedGender && !selectedType && (
         <div className="step step-types">
-          <h3>Пол: {selectedGender}</h3>
           <h3>Выберите тип товара:</h3>
           {types.map(t => (
-            <button key={t.id} onClick={() => handleTypeSelect(t.name)}>
+            <button className="step-button" key={t.id} onClick={() => handleTypeSelect(t.name)}>
               {t.name}
             </button>
           ))}

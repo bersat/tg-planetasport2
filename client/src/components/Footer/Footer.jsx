@@ -20,7 +20,7 @@ function Footer() {
           </NavLink>
         </li>
         <li>
-          <NavLink to="/profile" className={({ isActive }) => isActive ? 'active' : ''}>
+          <NavLink to="/register" className={({ isActive }) => isActive ? 'active' : ''}>
             <FaUser className="icon" />
             <span>Кабинет</span>
           </NavLink>

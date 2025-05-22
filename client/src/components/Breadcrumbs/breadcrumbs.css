@@ -1,6 +1,23 @@
 .breadcrumbs {
-  margin-bottom: 20px;
-  font-size: 14px;
+  margin: 10px 0 20px -2px;
+  font-size: 13px;
+  color: #dfdfdf;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* плавный скролл на iOS */
+  scrollbar-width: thin; /* Firefox */
+  padding-bottom: 4px;
+}
+
+.breadcrumbs::-webkit-scrollbar {
+  height: 5px;
+}
+
+.breadcrumbs::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
 }
 
 .breadcrumb-link {
@@ -8,11 +25,15 @@
   border: none;
   color: #dfdfdf;
   cursor: pointer;
-  font-weight: bold;
-  padding: 0;
+  font-weight: 200;
+  padding: 0 4px;
+  margin-right: 2px;
+  white-space: nowrap;
+  text-decoration: none;
 }
 
-.breadcrumb-link:disabled {
-  color: #d20c0c;
-  cursor: default;
+.breadcrumb-link:hover:not(:disabled) {
+  text-decoration: underline;
 }
+
+
