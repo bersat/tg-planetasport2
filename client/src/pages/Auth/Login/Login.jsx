@@ -29,7 +29,7 @@ const Login = () => {
         if (role === 'admin') {
           navigate('/admin/adminpanel'); // например, страница для админов
         } else {
-          navigate('/catalog');
+          navigate('/profile');
         }
       } else {
         setStatus(res.data.message || 'Неверный логин или пароль');

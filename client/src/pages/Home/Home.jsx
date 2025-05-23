@@ -7,10 +7,9 @@ import 'swiper/css/pagination';
 import './HomePage.css';
 
 const banners = [
-  { title: 'Новая коллекция', image: '/img/atom.png', link: '/catalog?category=Одежда&gender=Женский' },
-  { title: 'Летняя обувь', image: '/img/hike.png', link: '/catalog?category=Обувь&gender=Мужской' },
-  { title: 'Аксессуары', image: '/img/sale.png', link: '/catalog?category=Аксессуары&gender=Унисекс' },
-  { title: 'Аксессуары', image: '/img/sale2.png', link: '/catalog?category=Аксессуары&gender=Унисекс' },
+  { image: '/img/les.png', link: '/catalog?category=Одежда&gender=Женский' },
+  { image: '/img/podarok.png', link: '/catalog?category=Обувь&gender=Мужской' },
+  { image: '/img/kayland.png', link: '/catalog?category=Аксессуары&gender=Унисекс' },
 ];
 
 
@@ -34,7 +33,8 @@ function Home() {
         pagination={{ clickable: true }}
         loop={true}
         className="carousel"
-      >
+          >
+              <SwiperSlide><img src="/img/sale3.png" alt="Slide 1" /></SwiperSlide>
         <SwiperSlide><img src="/img/atom.png" alt="Slide 1" /></SwiperSlide>
         <SwiperSlide><img src="/img/sale.png" alt="Slide 2" /></SwiperSlide>
               <SwiperSlide><img src="/img/sale2.png" alt="Slide 3" /></SwiperSlide>
@@ -67,8 +67,28 @@ function Home() {
               {cat.name}
             </button>
           ))}
-        </div>
+              </div>
+              <div style={{ borderTop: "1px solid #4d4b4b",borderBottom:"1px solid #4d4b4b", marginTop: '50px' }} >
+                    <div style={{marginTop:"50px", marginBottom:"50px"}} className="banner">
+                  <img src="/img/sale4.png" alt="sale4" />
+              </div>
+              </div>
+          </div>
+                {/* О компании */}
+      <div style={{marginTop:"40px"}} className="about-section">
+        <p>О компании</p>
+
+                  <h2>Интернет-магазин</h2>
+              <h2>Планета Спорт</h2>
+        <p>
+          «Планета Спорт» – это сеть мультибрендовых магазинов, в которых представлены товары для экстремального спорта,
+          активного отдыха и путешествий. Мы специализируемся на outdoor-продукции. В ассортименте есть всё необходимое
+          для альпинизма, горнолыжного спорта, сноубординга, скалолазания, треккинга, пешего туризма, кемпинга, бега
+          и активной повседневной жизни. Люди с самыми разными outdoor-интересами: от профессиональных спортсменов
+          до любителей семейного отдыха на природе – могут приобрести в наших магазинах подходящую одежду и экипировку.
+        </p>
       </div>
+
     </div>
   );
 }

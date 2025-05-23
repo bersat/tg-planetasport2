@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { Profiler, useEffect } from "react";
 import './App.css';
 import { useTelegram } from "./hooks/useTelegram";
 import { Routes, Route } from 'react-router-dom';
@@ -12,6 +12,7 @@ import Header from "./components/Header/Header";
 import MainMenu from "./components/MainMenu/MainMenu";
 import Footer from "./components/Footer/Footer";
 import ProductPage from "./pages/ProductPage/ProductPage";
+import Profile from "./pages/Profile/Profile";
 
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
           <Route index element={<Home />} />
           <Route path={'login'} element={<Login />} />
           <Route path={'register'} element={<Register />} />
+          <Route path={'profile'} element={<Profile />} />
           <Route path={'catalog'} element={<Catalog />} />
           <Route path={'cart'} element={<Cart />} />
           <Route path="/product/:productId" element={<ProductPage />} />

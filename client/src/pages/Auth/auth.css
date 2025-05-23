@@ -1,6 +1,6 @@
 :root {
   --bg-color: #ffffff;
-  --text-color: #ffffff;
+  --text-color: #000;
   --input-bg: #f9f9f9;
   --button-bg: #c62828;
   --button-text: #ffffff;
@@ -33,7 +33,7 @@
   padding: 2rem;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  color: var(--text-color);
+  color: white;
   display: flex;
   flex-direction: column;
 }
