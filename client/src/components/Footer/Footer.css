@@ -64,3 +64,22 @@
   min-width: 10px;
   text-align: center;
 }
+
+/* Стиль для контейнера иконки в футере */
+.cart-icon-wrapper, .favorites-icon-wrapper {
+  position: relative;
+}
+
+/* Стили для счетчиков */
+.cart-count, .favorites-count {
+  position: absolute;
+  top: -8px;
+  right: -17px;
+  background-color: #e63946;  /* Красный цвет для фона */
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 0.5px 5px;
+  border-radius: 50%; /* Круглая форма */
+}
+

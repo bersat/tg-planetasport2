@@ -1,0 +1,94 @@
+/* Общие стили для контейнера фильтров */
+.filter-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.filter-dropdown {
+  background-color: #292828; /* Темный фон, чтобы соответствовать цветовой схеме */
+  border: 1px solid #4d4b4b; /* Серый бордер */
+  border-radius: 5px;
+  padding: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Добавим тень для красоты */
+  max-height: 200px; /* Ограничим высоту */
+  overflow-y: auto; /* Сделаем прокрутку */
+}
+
+/* Кнопки фильтров */
+.filters-buttons {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
+  justify-content: flex-start;
+  margin-bottom: 20px;
+}
+
+.filter-btn {
+  background-color: transparent;
+  border: 2px solid #4d4b4b;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.filter-btn:hover {
+  background-color: #4d4b4b;
+  color: white;
+}
+
+.filter-btn.active {
+  background-color: #4d4b4b;
+  color: white;
+}
+
+.filter-btn:focus {
+  outline: none;
+}
+
+/* Стили для списка брендов и размеров */
+.brand-filter ul,
+.size-filter ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  max-height: 150px; /* Ограничим высоту */
+}
+
+.brand-filter li,
+.size-filter li {
+  padding: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.brand-filter li:hover,
+.size-filter li:hover {
+  background-color: #4d4b4b;
+}
+
+.brand-filter li.selected,
+.size-filter li.selected {
+  background-color: #e63946; /* Цвет для выбранного элемента */
+  color: white;
+}
+
+/* Стили для инпутов цен */
+.price-filter input {
+  width: 80px;
+  padding: 5px;
+  background-color: #292828;
+  border: 1px solid #4d4b4b;
+  color: white;
+  border-radius: 4px;
+}
+
+.price-filter input:focus {
+  outline: none;
+}

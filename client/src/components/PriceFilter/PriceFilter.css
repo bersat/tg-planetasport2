@@ -1,0 +1,61 @@
+/* Стили для блока фильтра цены */
+.price-filter {
+  background-color: #292828;
+  padding: 15px;
+  border-radius: 5px;
+  border: 1px solid #4d4b4b;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Тень для фильтра */
+  margin-bottom: 15px;
+}
+
+.price-filter label {
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.price-filter-inputs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.price-filter input[type="number"] {
+  padding: 5px;
+  background-color: #292828;
+  border: 1px solid #4d4b4b;
+  color: white;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.slider-section {
+  margin-top: 10px;
+}
+
+.slider-section input[type="range"] {
+  background-color: #4d4b4b;
+  height: 8px; /* Сделаем ползунок чуть толще */
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+.slider-section input[type="range"]:focus {
+  outline: none; /* Убираем контур при фокусе */
+}
+
+.slider-section input[type="range"]::-webkit-slider-thumb {
+  background-color: #e63946; /* Цвет ползунка */
+  border: 2px solid #fff;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.slider-section input[type="range"]::-webkit-slider-thumb:hover {
+  background-color: #d62828; /* Цвет при наведении */
+}

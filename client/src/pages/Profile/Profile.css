@@ -1,3 +1,4 @@
+/* Сохранение текущего стиля контейнера */
 .profile-container {
   max-width: 500px;
   margin: 40px auto;
@@ -8,31 +9,124 @@
   margin-top: 70px;
 }
 
+/* Заголовок */
 .profile-title {
   text-align: center;
   margin-bottom: 20px;
   color: #dbdbdb;
 }
 
+/* Информация профиля */
 .profile-info p {
   font-size: 16px;
   margin: 10px 0;
   color: #efeeee;
 }
 
+/* Метки */
 .profile-label {
   font-weight: bold;
   color: #e9e8e8;
   margin-right: 8px;
 }
 
+/* Ошибка */
 .profile-error {
   color: #d32f2f;
   text-align: center;
   font-weight: bold;
 }
 
+/* Загрузка */
 .profile-loading {
   text-align: center;
   color: #666;
 }
+
+/* Стили для формы редактирования */
+.profile-edit {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-edit label {
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+.profile-input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+/* Кнопки "Сохранить" и "Отмена" */
+.button-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.save-btn, .cancel-btn {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  border: none;
+}
+
+.save-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.save-btn:hover {
+  background-color: #45a049;
+}
+
+.cancel-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background-color: #e53935;
+}
+
+/* Кнопка редактирования */
+.edit-btn {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #f32121;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+
+/* Уведомления об успешном обновлении */
+.profile-success {
+  color: #4CAF50;
+  background-color: #e8f5e9;
+  padding: 10px;
+  border-radius: 4px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  text-align: center;
+  transition: opacity 0.5s ease-in-out;
+}
+
+/* Ошибка */
+.profile-error {
+  color: #d32f2f;
+  background-color: #fce4ec;
+  padding: 10px;
+  border-radius: 4px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  text-align: center;
+}
+

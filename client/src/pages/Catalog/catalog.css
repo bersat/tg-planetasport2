@@ -7,6 +7,10 @@ body {
   padding: 0;
 }
 
+.products h2{
+  padding: 20px;
+}
+
 .catalog {
   padding: 20px;
   max-width: 1200px;
@@ -130,3 +134,83 @@ font-size: 25px;
     width: 50%; /* Для мобильных карточки на всю ширину экрана */
   }
 }
+
+/* Стили для фильтров */
+.filters-buttons {
+  display: flex;
+  flex-wrap: nowrap; /* Убираем возможность переноса на новую строку */
+  gap: 10px; /* Убираем промежутки между кнопками */
+  justify-content: flex-start; /* Выравниваем кнопки по левому краю */
+  margin-bottom: 20px;
+  width: 100%; /* Контейнер должен быть шириной 100% */
+}
+
+
+.filters-buttons p {
+  color: white;
+  font-size: 15px;
+  margin-right: 20px;
+}
+
+.filter-btn {
+  background-color: transparent;
+  border: 2px solid #4d4b4b;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  white-space: nowrap; /* Убираем обтекание текста */
+}
+
+.filter-btn:hover {
+  background-color: #4d4b4b;
+  color: white;
+}
+
+.filter-btn.active {
+  background-color: #4d4b4b;
+  color: white;
+}
+
+.filter-btn:focus {
+  outline: none;
+}
+
+/* Для мобильных устройств (адаптивность для фильтров) */
+@media (max-width: 768px) {
+  .filters-buttons {
+    flex-wrap: nowrap; /* Убираем возможность переноса на новую строку */
+    justify-content: flex-start; /* Выравниваем кнопки по левому краю */
+  }
+
+  .filters-buttons p {
+    margin-bottom: 10px; /* Добавляем отступ для текста */
+  }
+
+  .filter-btn {
+    width: auto; /* Убираем фиксированную ширину */
+    margin: 5px 0; /* Убираем боковые отступы */
+  }
+}
+
+.price-filter {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.price-filter label {
+  font-weight: bold;
+}
+
+.price-filter input {
+  width: 100px;
+  padding: 5px;
+}
+
+
+
+
+

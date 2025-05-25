@@ -1,0 +1,84 @@
+/* Стили для контейнера фильтра */
+.brand-filter {
+  background-color: #292828;
+  padding: 15px;
+  border-radius: 5px;
+  border: 1px solid #4d4b4b;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Тень для фильтра */
+  margin-bottom: 15px;
+}
+
+.brand-filter label {
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 10px;
+}
+
+/* Стили для списка опций */
+.brand-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.brand-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-checkbox {
+  width: 25px;
+  height: 25px;
+  background-color: #292828;
+  border: 2px solid #4d4b4b;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+.brand-checkbox:checked {
+  background-color: #e63946; /* Цвет фона для чекбокса при выборе */
+  border-color: #e63946; /* Цвет границы при выборе */
+}
+
+.brand-checkbox:focus {
+  outline: none;
+  box-shadow: 0 0 5px rgba(230, 57, 70, 0.5); /* Легкая тень при фокусе */
+}
+
+/* Стили для метки с именем бренда */
+.brand-label {
+  color: white;
+  font-size: 16px;
+  font-weight: normal;
+  cursor: pointer;
+  user-select: none; /* Убираем возможность выделения текста */
+  transition: all 0.3s ease;
+}
+
+/* При наведении на метку */
+.brand-label:hover {
+  color: #e63946; /* Цвет текста при наведении */
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+  .brand-filter {
+    padding: 10px;
+  }
+
+  .brand-checkbox {
+    width: 35px;
+    height: 35px;
+  }
+
+  .brand-label {
+    font-size: 18px;
+  }
+
+  .brand-option {
+    gap: 15px;
+  }
+}

@@ -53,8 +53,14 @@ const Login = () => {
         <button type="submit">Войти</button>
         <p className="status">{status}</p>
         <p className="note"><span className="required">*</span> — обязательные поля</p>
+
         <p style={{ marginTop: '1rem', textAlign: 'center' }}>
           Нет аккаунта? <Link to="/register" style={{ color: '#c62828' }}>Зарегистрироваться</Link>
+        </p>
+
+        {/* Добавляем ссылку для восстановления пароля */}
+        <p style={{ marginTop: '1rem', textAlign: 'center' }}>
+          <Link to="/forgot-password" style={{ color: '#c62828' }}>Забыли пароль?</Link>
         </p>
       </form>
     </div>

@@ -1,18 +1,24 @@
-/* Sidebar.css */
+/* Основной контейнер для Sidebar */
 .sidebar {
   position: fixed;
   top: 0;
   left: -250px; /* Начальная позиция за пределами экрана */
   width: 250px;
   height: 100%;
-  background-color: #333;
+  background-color: #292828; /* Темно-серый фон */
   color: white;
   padding: 20px;
   transition: left 0.3s ease; /* Плавное перемещение */
   z-index: 1000;
+  border-right: 3px solid #e63946; /* Красная граница */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Разделяем на блоки */
+  overflow-y: auto; /* Прокрутка для боковой панели */
+  padding-bottom: 60px; /* Чтобы футер не перекрывал содержимое */
 }
 
-/* Стили для затемненного фона */
+/* Для затемненного фона */
 .sidebar-overlay {
   position: fixed;
   top: 0;
@@ -23,34 +29,129 @@
   z-index: 999;
 }
 
-.sidebar nav ul {
+/* Верхняя часть Sidebar */
+.sidebar-header {
   display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 0;
-  margin: 0;
-  list-style: none;
+  justify-content: flex-end;
 }
 
-.sidebar nav ul li {
-  margin: 0; /* gap уже задаёт отступ */
-}
-
-.sidebar nav ul li a {
-  text-decoration: none;
-  color: white;
-  font-size: 18px;
-}
-
-.sidebar.open {
-  left: 0; /* Когда sidebar открыт, он будет выезжать */
-}
-
-.sidebar .close-btn {
-  position: absolute;
-  top: 20px;
-  right: 20px;
+.sidebar-close-btn {
   font-size: 30px;
   cursor: pointer;
   color: white;
+  transition: color 0.3s ease;
+}
+
+.sidebar-close-btn:hover {
+  color: #e63946; /* Красный при наведении */
+}
+
+/* Блок с навигационными ссылками */
+.sidebar-links {
+  list-style: none;
+  padding: 0;
+  margin-top: 60px; /* Отступ сверху, чтобы не перекрывать верхний бар */
+  width: 100%;
+}
+
+.sidebar-links li {
+  margin-bottom: 15px;
+}
+
+.sidebar-links li a {
+  text-decoration: none;
+  color: white;
+  font-size: 18px;
+  padding: 12px;
+  font-weight: bold;
+  display: block;
+  border: 2px solid #e63946; /* Красная граница */
+  border-radius: 8px; /* Скругление углов */
+  background-color: #333; /* Темный фон */
+}
+
+/* Кнопка "Покупателям" */
+.customers-btn {
+  background: none;
+  color: white;
+  font-size: 18px;
+  border: 2px solid #e63946;
+  padding: 12px;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  font-weight: bold;
+  border-radius: 8px;
+  background-color: #333; /* Темный фон для кнопки */
+  text-transform: none; /* Отключаем верхний регистр */
+}
+
+/* Стили для скрытых кнопок */
+/* Стили для скрытых кнопок (новые стили) */
+.sub-links {
+  display: none;
+  margin-top: 10px;
+  padding-left: 20px; /* Отступ слева для новых кнопок */
+  transition: max-height 0.5s ease-out, opacity 0.5s ease;
+  overflow: hidden;
+}
+
+.sub-links.visible {
+  display: block;
+  max-height: 500px; /* Вы можете настроить высоту, если нужно */
+  opacity: 1;
+}
+
+/* Стили для скрытых кнопок (выделяющиеся кнопки) */
+.sub-link {
+  display: block;
+  color: #fff;
+  font-size: 16px;
+  text-decoration: none;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: #ff7f50; /* Яркий оранжевый фон */
+  margin-bottom: 10px;
+  border: 2px solid #ff6347; /* Более яркая граница */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Легкая тень */
+  transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+}
+
+/* Эффект нажатия/наведения */
+.sub-link:hover {
+  background-color: #ff6347; /* Более темный оранжевый при наведении */
+  transform: translateY(-4px); /* Легкое поднятие кнопки */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Более выраженная тень */
+}
+
+/* Псевдоклассы для фокуса */
+.sub-link:focus {
+  outline: none;
+  border-color: #ff4500; /* Ярко-красная граница при фокусе */
+}
+
+/* Стили для контейнера, чтобы кнопки не сливались с фоном */
+.sub-links {
+  background-color: #333; /* Темный фон для области скрытых кнопок */
+  border-radius: 10px;
+  padding: 20px;
+}
+
+/* Нижняя часть Sidebar */
+.sidebar-footer {
+  margin-top: auto; /* Отодвигает футер вниз */
+  text-align: center;
+  font-size: 14px;
+  color: #b3b3b3;
+  padding: 10px 0;
+  border-top: 1px solid #444;
+}
+
+.sidebar-footer p {
+  margin: 0;
+}
+
+/* Когда Sidebar открыт */
+.sidebar.open {
+  left: 0; /* Плавно открывается */
 }

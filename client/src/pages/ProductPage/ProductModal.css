@@ -1,0 +1,142 @@
+.product-page {
+  max-width: 1200px;
+  margin: 300px auto 100px;
+  padding: 20px;
+  background-color: #1e1e1e;
+  color: white;
+  font-family: Arial, sans-serif;
+  border-radius: 10px;
+}
+
+.product-page h1 {
+  text-align: center;
+  font-size: 25px;
+  color: white;
+  margin-bottom: 30px;
+}
+
+.product-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  justify-content: space-between;
+  border: 1px solid #4d4b4b;
+  padding: 20px;
+}
+
+.product-image {
+  width: 100%;
+  max-width: 450px;
+  height: auto;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #4d4b4b;
+  background-color: #292828;
+}
+
+.product-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.product-description {
+  font-size: 16px;
+  color: #dddddd;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.product-price {
+  font-size: 20px;
+  font-weight: bold;
+  color: #2a9d8f;
+  margin-bottom: 20px;
+}
+
+.add-to-cart {
+  background-color: #e63946;
+  color: white;
+  font-size: 16px;
+  padding: 10px 25px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  width: fit-content;
+}
+
+.add-to-cart:hover {
+  background-color: #d62828;
+}
+
+/* Модальное окно */
+.product-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.7);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-y: auto;
+  padding: 40px 20px;
+}
+
+.product-modal {
+  background-color: #1e1e1e;
+  color: white;
+  padding: 30px;
+  width: 95%;
+  max-width: 1000px;
+  max-height: 120vh;
+  overflow-y: auto;
+  border-radius: 12px;
+  position: relative;
+  box-shadow: 0 0 20px rgba(0,0,0,0.6);
+}
+
+.close-button {
+  position: absolute;
+  right: 15px;
+  top: 10px;
+  font-size: 28px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+.review {
+  margin-bottom: 15px;
+  padding: 10px;
+  background: #2a2a2a;
+  border-radius: 5px;
+}
+
+.review-form {
+  margin-top: 20px;
+}
+
+.review-form .stars span {
+  font-size: 24px;
+  margin-right: 5px;
+}
+
+.review-form textarea {
+  width: 100%;
+  height: 60px;
+  margin-top: 10px;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #555;
+  background-color: #333;
+  color: white;
+  resize: none;
+}
+

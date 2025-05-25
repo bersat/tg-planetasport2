@@ -1,0 +1,95 @@
+/* Общие стили для контейнера */
+.payment-conditions-container {
+  background-color: #1e1e1e;
+  color: white;
+  font-family: 'Arial', sans-serif;
+  padding: 20px;
+  position: relative;
+  margin-bottom: 100px;
+  border-radius: 10px;
+}
+
+/* Заголовок страницы */
+.payment-conditions-header {
+  text-align: center;
+  font-size: 32px;
+  color: #e63946;
+  margin-bottom: 20px;
+}
+
+/* Стили для блока с хлебными крошками */
+.payment-conditions-breadcrumbs {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 16px;
+  color: #b3b3b3;
+}
+
+.payment-conditions-breadcrumbs a {
+  color: #e63946;
+  text-decoration: none;
+}
+
+.payment-conditions-breadcrumbs a:hover {
+  text-decoration: underline;
+}
+
+/* Контейнер для всех блоков с информацией */
+.payment-conditions-info {
+  display: grid;
+  grid-template-columns: 1fr; /* Одна колонка для страницы оплаты */
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+/* Стили для каждого блока с информацией */
+.payment-list {
+  list-style-type: none;
+  padding-left: 20px;
+}
+
+.payment-list li {
+  font-size: 18px;
+  color: #dcdcdc; /* Белый тусклый цвет */
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+/* Подсветка заголовков */
+h2 {
+  font-size: 24px;
+  color: #e63946;
+  margin-top: 20px;
+  margin-bottom: 15px;
+}
+
+a {
+  color: #e63946;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Стили для ссылок */
+.payment-conditions-info p {
+  font-size: 18px;
+  color: #dcdcdc;
+  line-height: 1.6;
+}
+
+/* Адаптивные стили для мобильных устройств */
+@media (max-width: 768px) {
+  .payment-conditions-info {
+    grid-template-columns: 1fr; /* Один столбец для мобильных устройств */
+  }
+
+  .payment-conditions-header {
+    font-size: 28px;
+  }
+
+  .payment-conditions-info p {
+    font-size: 16px;
+  }
+}

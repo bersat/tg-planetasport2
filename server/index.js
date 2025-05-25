@@ -5,13 +5,42 @@ const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const db = require('./db'); // PostgreSQL pool
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
+
+
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail', // или любой другой почтовый сервис
+    auth: {
+        user: 'your-email@gmail.com',  // ваш email
+        pass: 'your-email-password'    // ваш пароль (или лучше использовать OAuth2)
+    }
+});
+
+const sendResetCodeEmail = async (email, resetCode) => {
+    const mailOptions = {
+        from: 'your-email@gmail.com',  // ваш email
+        to: email,
+        subject: 'Сброс пароля',
+        text: `Ваш код для сброса пароля: ${resetCode}. Он действует 30 минут.`
+    };
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Email отправлен: ' + info.response);
+    } catch (error) {
+        console.error('Ошибка при отправке email: ', error);
+    }
+};
+
 
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// 🔐 Регистрация
+// Регистрация
 app.post('/api/register', async (req, res) => {
     const { full_name, email, phone, password } = req.body;
 
@@ -50,7 +79,7 @@ app.post('/api/register', async (req, res) => {
 });
 
 
-// 🔐 Авторизация
+// Авторизация
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -135,6 +164,119 @@ app.get('/api/profile', (req, res) => {
 });
 
 
+app.put('/api/profile', authenticateToken, async (req, res) => {
+    const { full_name, email, phone } = req.body;
+    const userId = req.user.id;
+
+    // Логируем полученные данные
+    console.log('Полученные данные:', req.body);
+
+    if (!full_name || !email || !phone) {
+        return res.status(400).json({ message: 'Все поля обязательны' });
+    }
+
+    try {
+        // Проверка на уникальность email и телефона
+        const emailCheck = await db.query('SELECT * FROM users WHERE email = $1 AND id != $2', [email, userId]);
+        if (emailCheck.rows.length > 0) {
+            return res.status(400).json({ message: 'Пользователь с таким email уже существует' });
+        }
+
+        const phoneCheck = await db.query('SELECT * FROM users WHERE phone = $1 AND id != $2', [phone, userId]);
+        if (phoneCheck.rows.length > 0) {
+            return res.status(400).json({ message: 'Пользователь с таким телефоном уже существует' });
+        }
+
+        // Обновление данных
+        const updateQuery = `
+      UPDATE users
+      SET full_name = $1, email = $2, phone = $3
+      WHERE id = $4
+      RETURNING id, full_name, email, phone;
+    `;
+
+        const updatedUser = await db.query(updateQuery, [full_name, email, phone, userId]);
+
+        res.json({
+            message: 'Профиль обновлен',
+            user: updatedUser.rows[0],
+        });
+    } catch (err) {
+        console.error('Ошибка обновления профиля:', err);
+        res.status(500).json({ message: 'Ошибка при обновлении профиля' });
+    }
+});
+
+
+app.post('/api/forgot-password', async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ message: 'Пожалуйста, введите email' });
+    }
+
+    try {
+        // Проверка, существует ли пользователь с таким email
+        const userResult = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+        const user = userResult.rows[0];
+
+        if (!user) {
+            return res.status(400).json({ message: 'Пользователь с таким email не найден' });
+        }
+
+        // Генерация случайного кода для сброса пароля
+        const resetCode = crypto.randomBytes(3).toString('hex');  // 6-значный код, например, "a3b2c9"
+
+        // Устанавливаем код сброса и срок его действия в базу данных
+        const resetCodeExpiry = new Date(Date.now() + 30 * 60 * 1000);  // 30 минут
+
+        await db.query(
+            'UPDATE users SET reset_code = $1, reset_code_expiry = $2 WHERE email = $3',
+            [resetCode, resetCodeExpiry, email]
+        );
+
+        // Отправляем email с кодом сброса пароля
+        await sendResetCodeEmail(email, resetCode);
+
+        res.status(200).json({ message: 'На ваш email отправлен код для сброса пароля' });
+    } catch (err) {
+        console.error('Ошибка при восстановлении пароля:', err);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
+
+app.post('/api/reset-password', async (req, res) => {
+    const { code, newPassword } = req.body;
+
+    if (!code || !newPassword) {
+        return res.status(400).json({ message: 'Пожалуйста, введите код и новый пароль' });
+    }
+
+    try {
+        // Проверяем, существует ли пользователь с таким кодом и код не истек
+        const userResult = await db.query('SELECT * FROM users WHERE reset_code = $1 AND reset_code_expiry > NOW()', [code]);
+        const user = userResult.rows[0];
+
+        if (!user) {
+            return res.status(400).json({ message: 'Неверный код или срок его действия истек' });
+        }
+
+        // Хешируем новый пароль
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Обновляем пароль пользователя
+        await db.query('UPDATE users SET password = $1, reset_code = NULL, reset_code_expiry = NULL WHERE id = $2', [hashedPassword, user.id]);
+
+        res.json({ success: true, message: 'Пароль успешно сброшен!' });
+    } catch (err) {
+        console.error('Ошибка при сбросе пароля:', err);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
+
+
 
 // Получение всех категорий
 app.get('/api/categories', async (req, res) => {
@@ -180,17 +322,28 @@ app.get('/api/types', async (req, res) => {
     }
 });
 
-
-
 app.get('/api/products', async (req, res) => {
-    const { category, gender, type } = req.query;
+    const {
+        category,
+        gender,
+        type,
+        brand,
+        feature,
+        priceMin,
+        priceMax,
+        size
+    } = req.query;
 
     let query = `
-    SELECT p.*
+    SELECT DISTINCT p.*, b.name AS brand_name
     FROM products p
     JOIN types t ON p.type_id = t.id
     JOIN categories c ON t.category_id = c.id
     JOIN genders g ON p.gender_id = g.id
+    LEFT JOIN brands b ON p.brand_id = b.id
+    LEFT JOIN product_features pf ON p.id = pf.product_id
+    LEFT JOIN feature_values fv ON pf.feature_value_id = fv.id
+    LEFT JOIN features f ON fv.feature_id = f.id
     WHERE 1=1
   `;
 
@@ -201,23 +354,186 @@ app.get('/api/products', async (req, res) => {
         query += ` AND c.name = $${count++}`;
         values.push(category);
     }
+
     if (gender) {
         query += ` AND g.name = $${count++}`;
         values.push(gender);
     }
+
     if (type) {
         query += ` AND t.name = $${count++}`;
         values.push(type);
     }
 
+    if (brand) {
+        let brandList = Array.isArray(brand)
+            ? brand
+            : brand.includes(',') ? brand.split(',').map(b => b.trim()) : [brand];
+
+        if (brandList.length) {
+            const placeholders = brandList.map((_, idx) => `$${count + idx}`).join(',');
+            query += ` AND b.name IN (${placeholders})`;
+            values.push(...brandList);
+            count += brandList.length;
+        }
+    }
+
+    if (feature) {
+        query += ` AND fv.value = $${count++}`;
+        values.push(feature);
+    }
+
+    if (priceMin) {
+        query += ` AND p.price >= $${count++}`;
+        values.push(priceMin);
+    }
+
+    if (priceMax) {
+        query += ` AND p.price <= $${count++}`;
+        values.push(priceMax);
+    }
+
     try {
         const result = await db.query(query, values);
+        const products = result.rows;
+
+        // Если фильтрация по размеру — делаем отдельно
+        let filteredProducts = products;
+        if (size) {
+            const sizeList = Array.isArray(size)
+                ? size
+                : size.includes(',') ? size.split(',').map(s => s.trim()) : [size];
+
+            const sizeQuery = `
+        SELECT DISTINCT ps.product_id
+        FROM product_sizes ps
+        JOIN sizes s ON ps.size_id = s.id
+        WHERE s.name = ANY($1)
+      `;
+            const sizeResult = await db.query(sizeQuery, [sizeList]);
+            const allowedProductIds = sizeResult.rows.map(r => r.product_id);
+            filteredProducts = products.filter(p => allowedProductIds.includes(p.id));
+        }
+
+        // Получаем размеры
+        const productIds = filteredProducts.map(p => p.id);
+        const sizeQuery = `
+      SELECT ps.product_id, s.name AS size
+      FROM product_sizes ps
+      JOIN sizes s ON ps.size_id = s.id
+      WHERE ps.product_id = ANY($1)
+    `;
+        const sizeResult = await db.query(sizeQuery, [productIds]);
+
+        const sizeMap = {};
+        sizeResult.rows.forEach(({ product_id, size }) => {
+            if (!sizeMap[product_id]) sizeMap[product_id] = [];
+            sizeMap[product_id].push(size);
+        });
+
+        const productsWithSizes = filteredProducts.map(prod => ({
+            ...prod,
+            sizes: sizeMap[prod.id] || []
+        }));
+
+        res.json(productsWithSizes);
+    } catch (err) {
+        console.error('Ошибка при получении товаров:', err.message);
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
+// Добавить отзыв
+app.post('/api/products/:id/reviews', async (req, res) => {
+    try {
+        const productId = req.params.id;
+        const { user_id, rating, comment } = req.body;
+
+        if (!user_id || !rating) {
+            return res.status(400).json({ error: 'user_id и rating обязательны' });
+        }
+
+        await db.query(
+            'INSERT INTO reviews (user_id, product_id, rating, comment) VALUES ($1, $2, $3, $4)',
+            [user_id, productId, rating, comment]
+        );
+
+        res.status(201).json({ message: 'Отзыв добавлен' });
+    } catch (err) {
+        console.error('Ошибка при добавлении отзыва:', err);
+        res.status(500).json({ error: 'Ошибка сервера при добавлении отзыва' });
+    }
+});
+
+
+// Получить отзывы по товару
+app.get('/api/products/:id/reviews', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await db.query(
+            `SELECT reviews.*, users.full_name FROM reviews
+            JOIN users ON reviews.user_id = users.id
+            WHERE reviews.product_id = $1
+            ORDER BY reviews.created_at DESC`,
+            [id]
+        );
         res.json(result.rows);
     } catch (err) {
-        console.error('Error fetching products:', err.message);
+        console.error('Ошибка при получении отзывов:', err);
+        res.status(500).json({ error: 'Ошибка сервера при получении отзывов' });
+    }
+});
+
+
+
+// Получение всех брендов
+app.get('/api/brands', async (req, res) => {
+    try {
+        const result = await db.query('SELECT * FROM brands');
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching brands:', err.message);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+// Получение всех характеристик (features)
+app.get('/api/features', async (req, res) => {
+    try {
+        const result = await db.query('SELECT * FROM features');
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching features:', err.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+app.get('/api/feature-values', async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT fv.id, fv.value, f.name AS feature
+            FROM feature_values fv
+            JOIN features f ON fv.feature_id = f.id
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Ошибка при получении значений характеристик:', err.message);
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
+// Получение всех размеров
+app.get('/api/sizes', async (req, res) => {
+    try {
+        const result = await db.query('SELECT * FROM sizes');
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching sizes:', err.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
 
 // API для поиска товаров
 app.get('/api/products/search', async (req, res) => {
@@ -238,7 +554,7 @@ app.get('/api/products/search', async (req, res) => {
     }
 });
 
-// server.js
+
 app.get('/api/products/:productId', async (req, res) => {
     const { productId } = req.params;
     try {
@@ -255,8 +571,7 @@ app.get('/api/products/:productId', async (req, res) => {
 });
 
 
-
-// 🚀 Настройка порта и запуск сервера
+// Настройка порта и запуск сервера
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`🚀 Сервер запущен на порту ${PORT}`);

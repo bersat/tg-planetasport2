@@ -1,0 +1,119 @@
+/* Общий контейнер для модального окна */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+/* Модальное окно */
+.modal {
+  background-color: #2b2b2b;
+  padding: 30px;
+  border-radius: 10px;
+  max-width: 800px;
+  width: 90%;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  color: #f1f1f1;
+  position: relative;
+}
+
+/* Кнопка закрытия модального окна */
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+}
+
+.close-btn:hover {
+  color: #ff6b6b;
+}
+
+/* Заголовок модального окна */
+.modal h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #fff;
+}
+
+/* Список товаров в модальном окне */
+.order-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  margin-bottom: 20px;
+}
+
+.order-items li {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #3a3a3a;
+}
+
+.order-items li span {
+  color: #bbb;
+}
+
+/* Сумма заказа */
+.order-summary {
+  margin-top: 20px;
+  text-align: right;
+}
+
+.order-summary p {
+  font-size: 16px;
+  color: #bbb;
+}
+
+/* Форма для ввода данных пользователя */
+.order-form {
+  margin-top: 30px;
+}
+
+.order-form input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #3a3a3a;
+  background-color: #1f1f1f;
+  color: #fff;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.order-form input::placeholder {
+  color: #bbb;
+}
+
+.order-form button {
+  width: 100%;
+  padding: 12px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.order-form button:hover {
+  background-color: #43a047;
+}
+
+/* Отступы между элементами формы */
+.order-form input + input {
+  margin-top: 15px;
+}

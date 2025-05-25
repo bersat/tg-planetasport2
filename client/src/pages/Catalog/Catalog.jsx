@@ -2,7 +2,12 @@ import React, { useState, useEffect } from 'react';
 import Breadcrumbs from '../../components/Breadcrumbs/Breadcrumbs';
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
+import FilterWrapper from '../../components/FilterWrapper/FilterWrapper'; // поправь путь, если нужно
 import './catalog.css';
+import ProductModal from '../ProductPage/ProductModal';
+import { useFavorites } from '../../components/FavoritesContext'; // Импортируем хук для работы с избранными
+import { FaHeart, FaRegHeart } from 'react-icons/fa'; // Для иконок сердечка
+
 
 const API_BASE = 'http://localhost:5000/api';
 
@@ -11,53 +16,72 @@ function Catalog() {
   const [genders, setGenders] = useState([]);
   const [types, setTypes] = useState([]);
   const [products, setProducts] = useState([]);
+  const [modalProductId, setModalProductId] = useState(null);
+  const { favorites, addToFavorites, removeFromFavorites } = useFavorites();
 
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [selectedGender, setSelectedGender] = useState(null);
-  const [selectedType, setSelectedType] = useState(null);
+
+
+  // Фильтры
+  const [brands, setBrands] = useState([]);
+  const [features, setFeatures] = useState([]);
+  const [sizes, setSizes] = useState([]);
+
+  // Выбранные фильтры (кроме category, gender, type, которые берутся из URL)
+  const [selectedBrands, setSelectedBrands] = useState([]);
+  const [selectedFeatures, setSelectedFeatures] = useState([]);
+  const [selectedSizes, setSelectedSizes] = useState([]);
+  const [selectedPrice, setSelectedPrice] = useState({ min: 0, max: 30000 });
+
+  const [activeFilter, setActiveFilter] = useState(null); // 'price', 'brand', 'feature', 'size' или null
 
   const navigate = useNavigate();
   const { search } = useLocation();
 
-  // Извлекаем параметры фильтров из URL
+  // Парсим URL параметры (категория, пол, тип) каждый раз при изменении search
   const queryParams = new URLSearchParams(search);
-  const urlCategory = queryParams.get('category');
-  const urlGender = queryParams.get('gender');
-  const urlType = queryParams.get('type');
+  const selectedCategory = queryParams.get('category');
+  const selectedGender = queryParams.get('gender');
+  const selectedType = queryParams.get('type');
+   const productIdFromUrl = queryParams.get('productId');
 
-  // Устанавливаем значения фильтров из URL при загрузке страницы
+  // Загрузка справочных данных при монтировании
   useEffect(() => {
-    if (urlCategory) setSelectedCategory(urlCategory);
-    if (urlGender) setSelectedGender(urlGender);
-    if (urlType) setSelectedType(urlType);
-  }, [urlCategory, urlGender, urlType]);
-
-  // Загрузка всех категорий при загрузке страницы
-  useEffect(() => {
-    axios.get(`${API_BASE}/categories`)
-      .then(res => setCategories(res.data))
-      .catch(err => console.error('Ошибка загрузки категорий:', err));
+    axios.get(`${API_BASE}/categories`).then(res => setCategories(res.data)).catch(console.error);
+    axios.get(`${API_BASE}/brands`).then(res => setBrands(res.data)).catch(console.error);
+    axios.get(`${API_BASE}/features`).then(res => setFeatures(res.data)).catch(console.error);
+    axios.get(`${API_BASE}/sizes`).then(res => setSizes(res.data)).catch(console.error);
   }, []);
 
-  // Загрузка полов после выбора категории
+  // Загрузка полов при выборе категории (selectedCategory берется из URL)
   useEffect(() => {
     if (selectedCategory) {
-      axios.get(`${API_BASE}/genders`)
-        .then(res => setGenders(res.data))
-        .catch(err => console.error('Ошибка загрузки полов:', err));
+      axios.get(`${API_BASE}/genders`).then(res => setGenders(res.data)).catch(console.error);
+    } else {
+      setGenders([]);
     }
   }, [selectedCategory]);
 
-  // Загрузка типов после выбора категории и пола
+  // Загрузка типов при выборе категории и пола (selectedCategory, selectedGender из URL)
   useEffect(() => {
     if (selectedCategory && selectedGender) {
       axios.get(`${API_BASE}/types`, { params: { category: selectedCategory } })
         .then(res => setTypes(res.data))
-        .catch(err => console.error('Ошибка загрузки типов:', err));
+        .catch(console.error);
+    } else {
+      setTypes([]);
     }
   }, [selectedCategory, selectedGender]);
 
-  // Загрузка товаров при любом изменении фильтров
+  // Универсальная функция переключения элемента в массиве выбранных фильтров
+  const toggleSelection = (item, selectedList, setSelectedList) => {
+    if (selectedList.includes(item)) {
+      setSelectedList(selectedList.filter(i => i !== item));
+    } else {
+      setSelectedList([...selectedList, item]);
+    }
+  };
+
+  // Загрузка товаров с учётом всех фильтров (включая category, gender, type из URL)
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -65,6 +89,12 @@ function Catalog() {
         if (selectedCategory) params.category = selectedCategory;
         if (selectedGender) params.gender = selectedGender;
         if (selectedType) params.type = selectedType;
+
+        if (selectedBrands.length) params.brand = selectedBrands.join(',');
+        if (selectedFeatures.length) params.feature = selectedFeatures;
+        if (selectedSizes.length) params.size = selectedSizes.join(',');
+        if (selectedPrice.min) params.priceMin = selectedPrice.min;
+        if (selectedPrice.max) params.priceMax = selectedPrice.max;
 
         const res = await axios.get(`${API_BASE}/products`, { params });
         setProducts(res.data);
@@ -74,54 +104,108 @@ function Catalog() {
     };
 
     fetchProducts();
-  }, [selectedCategory, selectedGender, selectedType]);
+  }, [
+    selectedCategory,
+    selectedGender,
+    selectedType,
+    selectedBrands,
+    selectedFeatures,
+    selectedSizes,
+    selectedPrice,
+  ]);
 
-  const handleReset = () => {
-    setSelectedCategory(null);
-    setSelectedGender(null);
-    setSelectedType(null);
-    navigate('/catalog');
+    // Если есть productId в URL, сразу открываем товар в модальном окне
+  useEffect(() => {
+    if (productIdFromUrl) {
+      setModalProductId(productIdFromUrl);
+    }
+  }, [productIdFromUrl]);
+
+   const handleOpenProductModal = (id) => {
+    setModalProductId(id);
+    navigate(`/catalog?productId=${id}`); // Обновляем URL с ID товара
   };
 
+   const handleCloseModal = () => {
+    setModalProductId(null);
+    navigate('/catalog'); // Возвращаемся на каталог без параметра productId
+  };
+
+  // Обработчики выбора категории, пола, типа — меняют URL
   const handleCategorySelect = (category) => {
-    setSelectedCategory(category);
-    navigate(`/catalog?category=${category}`); // передаем фильтр в URL
+    navigate(`/catalog?category=${category}`);
+    setSelectedBrands([]);
+    setSelectedFeatures([]);
+    setSelectedSizes([]);
+    setSelectedPrice({ min: '', max: '' });
+    setActiveFilter(null);
   };
 
   const handleGenderSelect = (gender) => {
-    setSelectedGender(gender);
-    navigate(`/catalog?category=${selectedCategory}&gender=${gender}`); // передаем фильтры в URL
+    navigate(`/catalog?category=${selectedCategory}&gender=${gender}`);
+    setSelectedBrands([]);
+    setSelectedFeatures([]);
+    setSelectedSizes([]);
+    setSelectedPrice({ min: '', max: '' });
+    setActiveFilter(null);
   };
 
   const handleTypeSelect = (type) => {
-    setSelectedType(type);
-    navigate(`/catalog?category=${selectedCategory}&gender=${selectedGender}&type=${type}`); // передаем фильтры в URL
+    navigate(`/catalog?category=${selectedCategory}&gender=${selectedGender}&type=${type}`);
+    setSelectedBrands([]);
+    setSelectedFeatures([]);
+    setSelectedSizes([]);
+    setSelectedPrice({ min: '', max: '' });
+    setActiveFilter(null);
   };
 
-  // Функция для отображения заголовка в зависимости от выбранных фильтров
+  // Цена
+const handlePriceChange = (e) => {
+  const { name, value } = e.target || {}; // Добавляем проверку на undefined
+  if (name && value !== undefined) { // Проверяем, что name и value существуют
+    const newValue = value ? parseInt(value) : ''; // Преобразуем пустое значение в пустую строку
+    setSelectedPrice(prev => ({
+      ...prev,
+      [name]: newValue,
+    }));
+  }
+};
+
+  // Сброс фильтров полностью — возвращаемся на общий каталог без параметров
+  const handleReset = () => {
+    setSelectedBrands([]);
+    setSelectedFeatures([]);
+    setSelectedSizes([]);
+    setSelectedPrice({ min: '', max: '' });
+    setActiveFilter(null);
+    navigate('/catalog');
+  };
+
+  const isFavorite = (productId) => favorites.some(prod => prod.id === productId);
+
+  const toggleFavorite = (product) => {
+  if (isFavorite(product.id)) {
+    removeFromFavorites(product.id); // Убираем из избранного
+  } else {
+    addToFavorites(product); // Добавляем в избранное
+  }
+};
+
+
+
+  // Заголовок
   const renderHeader = () => {
-    let title = 'Каталог'; // Заголовок по умолчанию
-
-    if (selectedCategory) {
-      title = selectedCategory;
-    }
-
-    if (selectedGender) {
-      title = `${selectedGender}`;
-    }
-
-    if (selectedType) {
-      title = `${selectedType}`;
-    }
-    return `${title}`;
+    if (selectedType) return selectedType;
+    if (selectedGender) return selectedGender;
+    if (selectedCategory) return selectedCategory;
+    return 'Каталог';
   };
 
   return (
     <div className="catalog">
       <h1 className="renderHeader">
-  {renderHeader()} <span className="product-count">{products.length}</span>
-</h1>
-
+        {renderHeader()} <span className="product-count">{products.length}</span>
+      </h1>
 
       <Breadcrumbs
         selectedCategory={selectedCategory}
@@ -131,61 +215,123 @@ function Catalog() {
           if (level === 'catalog') {
             handleReset();
           } else if (level === 'category') {
-            setSelectedGender(null);
-            setSelectedType(null);
             navigate(`/catalog?category=${selectedCategory}`);
+            setSelectedBrands([]);
+            setSelectedFeatures([]);
+            setSelectedSizes([]);
+            setSelectedPrice({ min: '', max: '' });
+            setActiveFilter(null);
           } else if (level === 'gender') {
-            setSelectedType(null);
             navigate(`/catalog?category=${selectedCategory}&gender=${selectedGender}`);
+            setSelectedBrands([]);
+            setSelectedFeatures([]);
+            setSelectedSizes([]);
+            setSelectedPrice({ min: '', max: '' });
+            setActiveFilter(null);
           } else if (level === 'type') {
             navigate(`/catalog?category=${selectedCategory}&gender=${selectedGender}&type=${selectedType}`);
+            setSelectedBrands([]);
+            setSelectedFeatures([]);
+            setSelectedSizes([]);
+            setSelectedPrice({ min: '', max: '' });
+            setActiveFilter(null);
           }
         }}
       />
 
-      {/* Шаг 1: Категории */}
+      {/* Пошаговая фильтрация */}
       {!selectedCategory && (
         <div className="step step-categories">
           <h3>Выберите категорию:</h3>
           {categories.map(cat => (
-            <button className="step-button" key={cat.id} onClick={() => handleCategorySelect(cat.name)}>
+            <button
+              className="step-button"
+              key={cat.id}
+              onClick={() => handleCategorySelect(cat.name)}
+            >
               {cat.name}
             </button>
           ))}
         </div>
       )}
 
-      {/* Шаг 2: Пол */}
       {selectedCategory && !selectedGender && (
         <div className="step step-genders">
           <h3>Выберите пол:</h3>
           {genders.map(g => (
-            <button className="step-button" key={g.id} onClick={() => handleGenderSelect(g.name)}>
+            <button
+              className="step-button"
+              key={g.id}
+              onClick={() => handleGenderSelect(g.name)}
+            >
               {g.name}
             </button>
           ))}
         </div>
       )}
 
-      {/* Шаг 3: Тип */}
       {selectedGender && !selectedType && (
         <div className="step step-types">
           <h3>Выберите тип товара:</h3>
           {types.map(t => (
-            <button className="step-button" key={t.id} onClick={() => handleTypeSelect(t.name)}>
+            <button
+              className="step-button"
+              key={t.id}
+              onClick={() => handleTypeSelect(t.name)}
+            >
               {t.name}
             </button>
           ))}
         </div>
       )}
 
-      {(selectedCategory || selectedGender || selectedType) && (
+      {/* Кнопки фильтров */}
+   <div style={{ display: "flex", maxWidth: "500px" }} className="filters-buttons">
+  <p>Фильтрация</p>
+  <button
+    className={`filter-btn ${activeFilter === 'price' ? 'active' : ''}`}
+    onClick={() => setActiveFilter(activeFilter === 'price' ? null : 'price')}
+  >
+    Цена
+  </button>
+  <button
+    className={`filter-btn ${activeFilter === 'brand' ? 'active' : ''}`}
+    onClick={() => setActiveFilter(activeFilter === 'brand' ? null : 'brand')}
+  >
+    Бренд
+  </button>
+  <button
+    className={`filter-btn ${activeFilter === 'size' ? 'active' : ''}`}
+    onClick={() => setActiveFilter(activeFilter === 'size' ? null : 'size')}
+  >
+    Размер
+  </button>
+</div>
+
+      {/* Фильтры через компонент */}
+      <FilterWrapper
+        activeFilter={activeFilter}
+        brands={brands}
+        sizes={sizes}
+        features={features}
+        selectedBrands={selectedBrands}
+        selectedSizes={selectedSizes}
+        selectedFeatures={selectedFeatures}
+        selectedPrice={selectedPrice}
+        handleBrandToggle={(brandName) => toggleSelection(brandName, selectedBrands, setSelectedBrands)}
+        onToggleSize={(size) => toggleSelection(size, selectedSizes, setSelectedSizes)}
+        onToggleFeature={(feature) => toggleSelection(feature, selectedFeatures, setSelectedFeatures)}
+        onPriceChange={handlePriceChange}
+      />
+
+      {/* Кнопка сброса фильтров */}
+      {(selectedCategory || selectedGender || selectedType || selectedBrands.length > 0 || selectedFeatures.length > 0 || selectedSizes.length > 0 || selectedPrice.min || selectedPrice.max) && (
         <div className="step step-reset">
           <button className="reset" onClick={handleReset}>Сбросить фильтры</button>
         </div>
       )}
 
-      {/* Блок товаров */}
+      {/* Товары */}
       <div className="products">
         <h2>Товары</h2>
         {products.length > 0 ? (
@@ -194,15 +340,25 @@ function Catalog() {
               <div className="product" key={prod.id}>
                 <img src={prod.image_url} alt={prod.title} />
                 <h4>{prod.title}</h4>
+                <p className="brand">Бренд: {prod.brand_name || 'Неизвестно'}</p>
                 <p>{prod.description}</p>
+                <p>Размеры: {prod.sizes && prod.sizes.length > 0 ? prod.sizes.join(', ') : 'Нет данных'}</p>
                 <span className="price">{prod.price} ₽</span>
                 <div className="product-actions">
                   <button
                     className="view-details"
-                    onClick={() => navigate(`/product/${prod.id}?category=${selectedCategory}&gender=${selectedGender}&type=${selectedType}`)} // Переход на страницу товара с фильтрами в URL
+                    onClick={() => handleOpenProductModal(prod.id)}
                   >
                     Подробнее
                   </button>
+                  <div className="favorite-btn" onClick={() => toggleFavorite(prod)}>
+  {isFavorite(prod.id) ? (
+    <FaHeart color="red" size={24} />
+  ) : (
+    <FaRegHeart color="white" size={24} />
+  )}
+</div>
+
                 </div>
               </div>
             ))}
@@ -211,6 +367,16 @@ function Catalog() {
           <p>Товары не найдены</p>
         )}
       </div>
+      {modalProductId && (
+  <ProductModal
+    productId={modalProductId}
+    onClose={handleCloseModal}
+    category={selectedCategory}
+    gender={selectedGender}
+    type={selectedType}
+  />
+)}
+
     </div>
   );
 }

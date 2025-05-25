@@ -1,0 +1,95 @@
+/* Общие стили для контейнера */
+.delivery-conditions-container {
+  background-color: #1e1e1e;
+  color: white;
+  font-family: 'Arial', sans-serif;
+  padding: 20px;
+  position: relative;
+  margin-bottom: 100px;
+  border-radius: 10px;
+}
+
+/* Заголовок страницы */
+.delivery-conditions-header {
+  text-align: center;
+  font-size: 32px;
+  color: #e63946;
+  margin-bottom: 20px;
+}
+
+/* Стили для блока с хлебными крошками */
+.delivery-conditions-breadcrumbs {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 16px;
+  color: #b3b3b3;
+}
+
+.delivery-conditions-breadcrumbs a {
+  color: #e63946;
+  text-decoration: none;
+}
+
+.delivery-conditions-breadcrumbs a:hover {
+  text-decoration: underline;
+}
+
+/* Контейнер для всех блоков с информацией */
+.delivery-conditions-info {
+  display: grid;
+  grid-template-columns: 1fr; /* Одна колонка для страницы доставки */
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+/* Стили для каждого блока с информацией */
+.delivery-list {
+  list-style-type: none;
+  padding-left: 20px;
+}
+
+.delivery-list li {
+  font-size: 18px;
+  color: #dcdcdc; /* Белый тусклый цвет */
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+/* Подсветка заголовков */
+h2 {
+  font-size: 24px;
+  color: #e63946;
+  margin-top: 20px;
+  margin-bottom: 15px;
+}
+
+a {
+  color: #e63946;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Стили для ссылок */
+.delivery-conditions-info p {
+  font-size: 18px;
+  color: #dcdcdc;
+  line-height: 1.6;
+}
+
+/* Адаптивные стили для мобильных устройств */
+@media (max-width: 768px) {
+  .delivery-conditions-info {
+    grid-template-columns: 1fr; /* Один столбец для мобильных устройств */
+  }
+
+  .delivery-conditions-header {
+    font-size: 28px;
+  }
+
+  .delivery-conditions-info p {
+    font-size: 16px;
+  }
+}

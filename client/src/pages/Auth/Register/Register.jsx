@@ -3,11 +3,17 @@ import '../auth.css';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
+// Регулярные выражения для валидации
+const nameRegex = /^([А-ЯЁ][а-яё]+)(\s[А-ЯЁ][а-яё]+){1,2}$/; // ФИО с заглавными буквами в начале и двумя или тремя словами (Фамилия, Имя, Отчество)
+const emailRegex = /^[a-zA-Z0-9._%+-]+@(mail.ru|yandex.ru|gmail.com)$/; // Проверка на почту mail.ru, yandex.ru, gmail.com
+const phoneRegex = /^\+7\d{10}$/; // Проверка на телефон +7 и 10 цифр
+const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{6,}$/; // Пароль (не менее 6 символов, заглавная, спец. символ)
+
 const Register = () => {
   const [form, setForm] = useState({
     full_name: '',
     email: '',
-    phone: '',
+    phone: '+7', // Изначально +7
     password: ''
   });
   const [status, setStatus] = useState('');
@@ -17,8 +23,62 @@ const Register = () => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  // Обработчик для телефона, чтобы автоматически подставлять +7
+  const handlePhoneChange = (e) => {
+    let value = e.target.value;
+
+    // Если первое значение не пустое, добавляем +7
+    if (!value.startsWith('+7')) {
+      value = '+7' + value.replace(/[^\d]/g, ''); // Убираем все символы, кроме цифр
+    } else {
+      // В случае, если номер уже начинается с +7, просто удаляем все символы, кроме цифр
+      value = '+7' + value.slice(2).replace(/[^\d]/g, '');
+    }
+
+    // Ограничиваем длину номера до 12 символов (+7 + 10 цифр)
+    if (value.length > 12) {
+      value = value.slice(0, 12);
+    }
+
+    setForm(prev => ({ ...prev, phone: value }));
+  };
+
+  const validateForm = () => {
+    const { full_name, email, phone, password } = form;
+
+    // Проверка ФИО: должны быть Фамилия, Имя, и, если есть, Отчество с заглавными буквами
+    if (!nameRegex.test(full_name)) {
+      setStatus('ФИО должно быть написано с заглавных букв, с фамилией, именем и, если есть, отчеством.');
+      return false;
+    }
+
+    // Проверка email
+    if (!emailRegex.test(email)) {
+      setStatus('Email должен быть в одном из следующих форматов: mail.ru, yandex.ru, gmail.com');
+      return false;
+    }
+
+    // Проверка телефона
+    if (!phoneRegex.test(phone)) {
+      setStatus('Телефон должен быть в формате +7XXXXXXXXXX.');
+      return false;
+    }
+
+    // Проверка пароля
+    if (!passwordRegex.test(password)) {
+      setStatus('Пароль должен быть не менее 6 символов, с заглавной буквой и хотя бы одним специальным знаком.');
+      return false;
+    }
+
+    // Все проверки пройдены
+    setStatus('');
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateForm()) return;
 
     try {
       const res = await axios.post('http://localhost:5000/api/register', form);
@@ -62,8 +122,9 @@ const Register = () => {
           name="phone"
           type="tel"
           required
-          onChange={handleChange}
+          onChange={handlePhoneChange}
           value={form.phone}
+          placeholder="+7"
         />
 
         <label>Пароль<span className="required">*</span></label>

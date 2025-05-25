@@ -1,14 +1,31 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { FaHome, FaUser, FaThLarge, FaShoppingCart, FaHeart } from 'react-icons/fa';
 import './Footer.css';
 import { useCart } from '../CartContext';
+import { useFavorites } from '../FavoritesContext';  // Импортируем useFavorites
 
 function Footer() {
+  const navigate = useNavigate();
   const { cart } = useCart();
+  const { favorites } = useFavorites();  // Извлекаем избранные товары из контекста
+
   const totalQuantity = (cart && Array.isArray(cart))
     ? cart.reduce((total, item) => total + item.quantity, 0)
     : 0;
+
+  const totalFavorites = favorites.length;  // Количество избранных товаров
+
+  // Логика проверки авторизации и токена
+  const isAuthenticated = () => {
+    const token = localStorage.getItem('token'); // или sessionStorage
+    if (!token) {
+      return false; // Токен отсутствует, значит пользователь не авторизован
+    }
+    return true; // Токен существует, пользователь авторизован
+  };
+
+  const cabinetLink = isAuthenticated() ? "/profile" : "/login"; // Путь зависит от авторизации
 
   return (
     <footer className="footer">
@@ -20,7 +37,7 @@ function Footer() {
           </NavLink>
         </li>
         <li>
-          <NavLink to="/register" className={({ isActive }) => isActive ? 'active' : ''}>
+          <NavLink to={cabinetLink} className={({ isActive }) => isActive ? 'active' : ''}>
             <FaUser className="icon" />
             <span>Кабинет</span>
           </NavLink>
@@ -42,7 +59,10 @@ function Footer() {
         </li>
         <li>
           <NavLink to="/favorites" className={({ isActive }) => isActive ? 'active' : ''}>
-            <FaHeart className="icon" />
+            <div className="favorites-icon-wrapper">
+              <FaHeart className="icon" />
+              {totalFavorites > 0 && <span className="favorites-count">{totalFavorites}</span>} {/* Счетчик избранных товаров */}
+            </div>
             <span>Избранное</span>
           </NavLink>
         </li>
