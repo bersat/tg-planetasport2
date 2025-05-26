@@ -7,9 +7,6 @@ body {
   padding: 0;
 }
 
-.products h2{
-  padding: 20px;
-}
 
 .catalog {
   padding: 20px;
@@ -46,6 +43,17 @@ button.reset:hover {
   background-color: #777; /* Более тёмный серый при наведении */
 }
 
+.brand{
+  margin-top: 5px;
+  border-bottom: 1px solid #4d4b4b;
+  border-top: 1px solid #4d4b4b;
+  width: 100%;
+}
+
+.size{
+    border-bottom: 1px solid #4d4b4b;
+}
+
 /* Стили для списка товаров */
 .product-list {
   display: flex;
@@ -56,7 +64,8 @@ button.reset:hover {
 
 .product {
   width: calc(50% - 10px); /* Делаем карточки шириной 50% с учетом отступов */
-  height: 380px; /* Высота карточки уменьшена */
+  height: auto; /* Высота карточки уменьшена */
+  max-height: 1400px;
   border: 1px solid #4d4b4b; /* Бордер серого цвета */
   padding: 10px; /* Уменьшены отступы внутри карточки */
   text-align: center;
@@ -72,41 +81,49 @@ button.reset:hover {
 }
 
 .product img {
-  max-width: 100%;
-  height: 150px; /* Высота изображения уменьшена */
-  object-fit: cover;
+  width: 100%; /* Ширина картинки на 100% */
+  height: 100%; /* Высота изображения занимать 60% карточки */
+  object-fit: cover; /* Обрезка изображения по центру */
+  object-position: center; /* Центрирование изображения */
   border-radius: 4px; /* Сглаживание углов изображения */
+  margin-bottom: 15px; /* Отступ снизу для пространства между картинкой и текстом */
 }
 
-.price {
-  display: block;
+.price{
+   display: block;
+   font-weight: 700;
+}
+
+.price span{
+
   margin-top: 10px;
   font-weight: bold;
-  color: #2a9d8f; /* Цвет для цены */
+  color: #3ef17f; /* Цвет для цены */
 }
 
 .product-actions {
   display: flex;
   justify-content: center; /* Центрируем действия в карточке */
   align-items: center;
-  margin-top: 20px; /* Добавляем отступ сверху */
-  flex-grow: 1; /* Позволяет кнопке занимать центральное положение */
+  margin-top: auto; /* Это гарантирует, что кнопки будут всегда внизу */
+  padding-top: 20px; /* Отступ сверху для кнопок */
+  gap: 10px; /* Промежутки между кнопками */
 }
 
-.renderHeader{
-font-size: 25px;
+.renderHeader {
+  font-size: 25px;
 }
 
-.product-count{
-    border: 0.5px solid white;
-    border-radius: 3px;
-    padding: 2px 10px;
-    font-size: 14px;
-    font-weight: 400;
+.product-count {
+  border: 0.5px solid white;
+  border-radius: 3px;
+  padding: 2px 10px;
+  font-size: 14px;
+  font-weight: 400;
 }
 
 .product-actions button.view-details {
-  padding: 8px 35px; /* Увеличим размер кнопки */
+  padding: 8px 20px; /* Увеличим размер кнопки */
   font-size: 16px; /* Увеличим размер текста */
   white-space: nowrap;
   background-color: #e63946; /* Красный для кнопки добавления в корзину */
@@ -144,7 +161,6 @@ font-size: 25px;
   margin-bottom: 20px;
   width: 100%; /* Контейнер должен быть шириной 100% */
 }
-
 
 .filters-buttons p {
   color: white;
@@ -210,7 +226,65 @@ font-size: 25px;
   padding: 5px;
 }
 
+.color-square {
+  width: 20px;              /* Ширина квадрата */
+  height: 20px;             /* Высота квадрата */
+  display: block;           /* Элемент на новой строке */
+  margin-top: 10px;          /* Отступ сверху, чтобы создать пространство между текстом и квадратом */
+  margin-left: 0;           /* Квадрат будет по левому краю */
+  border: 1px solid #ccc;  /* Рамка вокруг квадрата */
+  padding: 0;               /* Убираем padding, чтобы размер квадрата не изменялся */
+}
 
+.product-color p {
+  text-align: left; /* Убираем центрирование текста "Цвет:" */
+  margin: 0;        /* Убираем лишние отступы вокруг текста */
+}
 
+.quantity {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
 
+.quantity-circle {
+  position: relative;
+  display: inline-block;
+  width: 10px;
+  height: 19px;
+  background-color: #8df14f;
+  border-radius: 50%;
+  margin-right: 0px; /* Расстояние между точкой и текстом */
+  animation: pulse 2.5s linear infinite;
+}
 
+.quantity-circle::before, .quantity-circle::after {
+  content: '';
+  position: absolute;
+  border: 2px solid #30c768;
+  left: -8px;
+  right: -8px;
+  top: -8px;
+  bottom: -8px;
+  border-radius: 50%;
+  opacity: 0;
+  animation: pulse 2.5s linear infinite;
+}
+
+.quantity-circle::after {
+  animation-delay: 1.25s;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+}

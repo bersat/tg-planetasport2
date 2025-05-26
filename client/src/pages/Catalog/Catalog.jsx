@@ -4,12 +4,28 @@ import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import FilterWrapper from '../../components/FilterWrapper/FilterWrapper'; // поправь путь, если нужно
 import './catalog.css';
-import ProductModal from '../ProductPage/ProductModal';
+import ProductModal from '../ProductModal/ProductModal';
 import { useFavorites } from '../../components/FavoritesContext'; // Импортируем хук для работы с избранными
 import { FaHeart, FaRegHeart } from 'react-icons/fa'; // Для иконок сердечка
 
-
 const API_BASE = 'http://localhost:5000/api';
+
+const colorTranslation = {
+  black: 'чёрный',
+  red: 'красный',
+  blue: 'синий',
+  white: 'белый',
+  green: 'зелёный',
+  yellow: 'жёлтый',
+  multicolor: 'разноцветный',
+  gray: 'серый',
+  beige: 'бежевый',
+  'dark-brown': 'тёмно-коричневый',
+  swamp: 'болотный',
+  'dark-blue':'тёмно-синий',
+   'light-lavender': 'светло-сиреневый',
+  // Добавьте другие цвета по необходимости
+};
 
 function Catalog() {
   const [categories, setCategories] = useState([]);
@@ -18,8 +34,6 @@ function Catalog() {
   const [products, setProducts] = useState([]);
   const [modalProductId, setModalProductId] = useState(null);
   const { favorites, addToFavorites, removeFromFavorites } = useFavorites();
-
-
 
   // Фильтры
   const [brands, setBrands] = useState([]);
@@ -42,7 +56,7 @@ function Catalog() {
   const selectedCategory = queryParams.get('category');
   const selectedGender = queryParams.get('gender');
   const selectedType = queryParams.get('type');
-   const productIdFromUrl = queryParams.get('productId');
+  const productIdFromUrl = queryParams.get('productId');
 
   // Загрузка справочных данных при монтировании
   useEffect(() => {
@@ -81,6 +95,18 @@ function Catalog() {
     }
   };
 
+  const fetchImage = async (imageId) => {
+    try {
+      console.log(`Fetching image for imageId: ${imageId}`);  // Логируем передаваемый ID
+      const res = await axios.get(`${API_BASE}/product_image/${imageId}`);
+      console.log(`Image URL: ${res.data.imageUrl}`);  // Логируем полученный URL изображения
+      return res.data.imageUrl;
+    } catch (error) {
+      console.error('Ошибка при получении изображения:', error);
+      return null;
+    }
+  };
+
   // Загрузка товаров с учётом всех фильтров (включая category, gender, type из URL)
   useEffect(() => {
     const fetchProducts = async () => {
@@ -97,7 +123,14 @@ function Catalog() {
         if (selectedPrice.max) params.priceMax = selectedPrice.max;
 
         const res = await axios.get(`${API_BASE}/products`, { params });
-        setProducts(res.data);
+        const fetchedProducts = res.data;
+        // Загружаем изображения для каждого товара
+       const productsWithImages = fetchedProducts.map(product => ({
+        ...product,
+        image_url: product.image_url || 'default-image-.jpg'  // Если картинки нет, ставим дефолт
+      }));
+
+        setProducts(productsWithImages);
       } catch (err) {
         console.error('Ошибка загрузки товаров:', err);
       }
@@ -114,19 +147,19 @@ function Catalog() {
     selectedPrice,
   ]);
 
-    // Если есть productId в URL, сразу открываем товар в модальном окне
+  // Если есть productId в URL, сразу открываем товар в модальном окне
   useEffect(() => {
     if (productIdFromUrl) {
       setModalProductId(productIdFromUrl);
     }
   }, [productIdFromUrl]);
 
-   const handleOpenProductModal = (id) => {
+  const handleOpenProductModal = (id) => {
     setModalProductId(id);
     navigate(`/catalog?productId=${id}`); // Обновляем URL с ID товара
   };
 
-   const handleCloseModal = () => {
+  const handleCloseModal = () => {
     setModalProductId(null);
     navigate('/catalog'); // Возвращаемся на каталог без параметра productId
   };
@@ -160,16 +193,16 @@ function Catalog() {
   };
 
   // Цена
-const handlePriceChange = (e) => {
-  const { name, value } = e.target || {}; // Добавляем проверку на undefined
-  if (name && value !== undefined) { // Проверяем, что name и value существуют
-    const newValue = value ? parseInt(value) : ''; // Преобразуем пустое значение в пустую строку
-    setSelectedPrice(prev => ({
-      ...prev,
-      [name]: newValue,
-    }));
-  }
-};
+  const handlePriceChange = (e) => {
+    const { name, value } = e.target || {}; // Добавляем проверку на undefined
+    if (name && value !== undefined) { // Проверяем, что name и value существуют
+      const newValue = value ? parseInt(value) : ''; // Преобразуем пустое значение в пустую строку
+      setSelectedPrice(prev => ({
+        ...prev,
+        [name]: newValue,
+      }));
+    }
+  };
 
   // Сброс фильтров полностью — возвращаемся на общий каталог без параметров
   const handleReset = () => {
@@ -184,14 +217,12 @@ const handlePriceChange = (e) => {
   const isFavorite = (productId) => favorites.some(prod => prod.id === productId);
 
   const toggleFavorite = (product) => {
-  if (isFavorite(product.id)) {
-    removeFromFavorites(product.id); // Убираем из избранного
-  } else {
-    addToFavorites(product); // Добавляем в избранное
-  }
-};
-
-
+    if (isFavorite(product.id)) {
+      removeFromFavorites(product.id); // Убираем из избранного
+    } else {
+      addToFavorites(product); // Добавляем в избранное
+    }
+  };
 
   // Заголовок
   const renderHeader = () => {
@@ -200,6 +231,50 @@ const handlePriceChange = (e) => {
     if (selectedCategory) return selectedCategory;
     return 'Каталог';
   };
+
+   const getColorInRussian = (color) => {
+    return colorTranslation[color] || color;  // Если цвет не найден, возвращаем как есть
+  };
+
+const getColorStyle = (color) => {
+  // Проверяем, что color не равен null или undefined
+  if (!color) {
+    return 'gray';  // Если цвет не задан, ставим серый
+  }
+
+  // Если это светло-сиреневый цвет
+  if (color === 'light-lavender') {
+    return '#E6D1F2';  // Например, светло-сиреневый можно записать как HEX #E6D1F2
+  }
+
+   // Если это тёмно-синий цвет
+  if (color === 'dark-blue') {
+    return '#003366';  // Тёмно-синий цвет (HEX)
+  }
+
+   // Если это тёмно-коричневый цвет
+  if (color === 'dark-brown') {
+    return '#3E1F1C';  // Тёмно-коричневый цвет (HEX)
+  }
+
+   // Если это бежевый цвет
+  if (color === 'beige') {
+    return '#F5F5DC';  // Бежевый цвет (HEX)
+  }
+
+    // Если это болотный цвет
+  if (color === 'swamp') {
+    return '#556B2F';  // Болотный цвет (HEX)
+  }
+
+  // Если в цвете несколько значений (например, 'red, green, blue')
+  if (color.includes(',')) {
+    return `linear-gradient(to right, ${color})`;
+  }
+
+  // Если это одиночный цвет, возвращаем его как есть
+  return color;
+};
 
   return (
     <div className="catalog">
@@ -286,27 +361,27 @@ const handlePriceChange = (e) => {
       )}
 
       {/* Кнопки фильтров */}
-   <div style={{ display: "flex", maxWidth: "500px" }} className="filters-buttons">
-  <p>Фильтрация</p>
-  <button
-    className={`filter-btn ${activeFilter === 'price' ? 'active' : ''}`}
-    onClick={() => setActiveFilter(activeFilter === 'price' ? null : 'price')}
-  >
-    Цена
-  </button>
-  <button
-    className={`filter-btn ${activeFilter === 'brand' ? 'active' : ''}`}
-    onClick={() => setActiveFilter(activeFilter === 'brand' ? null : 'brand')}
-  >
-    Бренд
-  </button>
-  <button
-    className={`filter-btn ${activeFilter === 'size' ? 'active' : ''}`}
-    onClick={() => setActiveFilter(activeFilter === 'size' ? null : 'size')}
-  >
-    Размер
-  </button>
-</div>
+      <div style={{ display: "flex", maxWidth: "500px" }} className="filters-buttons">
+        <p>Фильтрация</p>
+        <button
+          className={`filter-btn ${activeFilter === 'price' ? 'active' : ''}`}
+          onClick={() => setActiveFilter(activeFilter === 'price' ? null : 'price')}
+        >
+          Цена
+        </button>
+        <button
+          className={`filter-btn ${activeFilter === 'brand' ? 'active' : ''}`}
+          onClick={() => setActiveFilter(activeFilter === 'brand' ? null : 'brand')}
+        >
+          Бренд
+        </button>
+        <button
+          className={`filter-btn ${activeFilter === 'size' ? 'active' : ''}`}
+          onClick={() => setActiveFilter(activeFilter === 'size' ? null : 'size')}
+        >
+          Размер
+        </button>
+      </div>
 
       {/* Фильтры через компонент */}
       <FilterWrapper
@@ -331,52 +406,72 @@ const handlePriceChange = (e) => {
         </div>
       )}
 
-      {/* Товары */}
-      <div className="products">
-        <h2>Товары</h2>
-        {products.length > 0 ? (
-          <div className="product-list">
-            {products.map(prod => (
-              <div className="product" key={prod.id}>
-                <img src={prod.image_url} alt={prod.title} />
-                <h4>{prod.title}</h4>
-                <p className="brand">Бренд: {prod.brand_name || 'Неизвестно'}</p>
-                <p>{prod.description}</p>
-                <p>Размеры: {prod.sizes && prod.sizes.length > 0 ? prod.sizes.join(', ') : 'Нет данных'}</p>
-                <span className="price">{prod.price} ₽</span>
-                <div className="product-actions">
-                  <button
-                    className="view-details"
-                    onClick={() => handleOpenProductModal(prod.id)}
-                  >
-                    Подробнее
-                  </button>
-                  <div className="favorite-btn" onClick={() => toggleFavorite(prod)}>
-  {isFavorite(prod.id) ? (
-    <FaHeart color="red" size={24} />
+    {/* Товары */}
+<div className="products">
+  <h2>Товары</h2>
+  {products.length > 0 ? (
+    <div className="product-list">
+      {products.map(prod => (
+        <div className="product" key={prod.id}>
+          <div className="product-image-wrapper">
+            <img src={prod.image_url} alt={prod.title} onClick={() => handleOpenProductModal(prod.id)} />
+          </div>
+          <h4>{prod.title}</h4>
+          <p className="brand">Бренд: {prod.brand_name || 'Неизвестно'}</p>
+          <p className='size'>Размеры: {prod.sizes && prod.sizes.length > 0 ? prod.sizes.join(', ') : 'Нет данных'}</p>
+
+            <p className='price'>Цена: <span> {prod.price} ₽</span></p>
+
+
+          {/* Отображение цвета товара */}
+         <div className="product-color">
+  <p>Цвет: {getColorInRussian(prod.color)}</p>
+  <div
+    className="color-square"
+     style={{
+    background: getColorStyle(prod.color),
+  }}
+  ></div>
+</div>
+
+
+          {/* Отображение количества товара с анимацией */}
+          <p className="quantity">
+             <span className="quantity-circle"></span>
+            <span className="quantity-number">{prod.quantity}  в наличии</span>
+          </p>
+
+          <div className="product-actions">
+            <button className="view-details" onClick={() => handleOpenProductModal(prod.id)}>
+              Подробнее
+            </button>
+            <div className="favorite-btn" onClick={() => toggleFavorite(prod)}>
+              {isFavorite(prod.id) ? (
+                <FaHeart color="red" size={24} />
+              ) : (
+                <FaRegHeart color="white" size={24} />
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
   ) : (
-    <FaRegHeart color="white" size={24} />
+    <p>Товары не найдены</p>
   )}
 </div>
 
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p>Товары не найдены</p>
-        )}
-      </div>
-      {modalProductId && (
-  <ProductModal
-    productId={modalProductId}
-    onClose={handleCloseModal}
-    category={selectedCategory}
-    gender={selectedGender}
-    type={selectedType}
-  />
-)}
 
+
+      {modalProductId && (
+        <ProductModal
+          productId={modalProductId}
+          onClose={handleCloseModal}
+          category={selectedCategory}
+          gender={selectedGender}
+          type={selectedType}
+        />
+      )}
     </div>
   );
 }

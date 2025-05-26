@@ -335,7 +335,7 @@ app.get('/api/products', async (req, res) => {
     } = req.query;
 
     let query = `
-    SELECT DISTINCT p.*, b.name AS brand_name
+    SELECT DISTINCT p.*, b.name AS brand_name, p.image_url, p.color, p.quantity
     FROM products p
     JOIN types t ON p.type_id = t.id
     JOIN categories c ON t.category_id = c.id
@@ -431,17 +431,20 @@ app.get('/api/products', async (req, res) => {
             sizeMap[product_id].push(size);
         });
 
-        const productsWithSizes = filteredProducts.map(prod => ({
-            ...prod,
-            sizes: sizeMap[prod.id] || []
+        // Добавляем размеры в каждый товар
+        filteredProducts = filteredProducts.map(product => ({
+            ...product,
+            sizes: sizeMap[product.id] || []  // Связанные размеры товара
         }));
 
-        res.json(productsWithSizes);
+        res.json(filteredProducts);
     } catch (err) {
         console.error('Ошибка при получении товаров:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
+
+
 
 // Добавить отзыв
 app.post('/api/products/:id/reviews', async (req, res) => {
@@ -558,9 +561,30 @@ app.get('/api/products/search', async (req, res) => {
 app.get('/api/products/:productId', async (req, res) => {
     const { productId } = req.params;
     try {
-        const result = await db.query('SELECT * FROM products WHERE id = $1', [productId]);
-        if (result.rows.length > 0) {
-            res.json(result.rows[0]); // Возвращаем данные о товаре
+        // Получаем данные о товаре
+        const productResult = await db.query('SELECT * FROM products WHERE id = $1', [productId]);
+
+        if (productResult.rows.length > 0) {
+            const product = productResult.rows[0];
+
+            // Получаем размеры товара из таблицы product_size и size
+            const sizesResult = await db.query(
+                `SELECT s.name
+         FROM product_sizes ps
+         JOIN sizes s ON ps.size_id = s.id
+         WHERE ps.product_id = $1`,
+                [productId]
+            );
+
+            // Преобразуем результаты в массив размеров
+            const sizes = sizesResult.rows.map(row => row.name);
+
+            // Добавляем размеры к объекту товара
+            product.sizes = sizes;
+
+            console.log('Product Sizes:', product.sizes);  // Проверка в консоли
+
+            res.json(product);  // Возвращаем данные о товаре
         } else {
             res.status(404).json({ error: 'Товар не найден' });
         }
@@ -569,7 +593,6 @@ app.get('/api/products/:productId', async (req, res) => {
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
-
 
 // Настройка порта и запуск сервера
 const PORT = process.env.PORT || 5000;

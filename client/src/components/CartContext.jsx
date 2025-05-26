@@ -22,31 +22,34 @@ export function CartProvider({ children }) {
     }
   }, [cart]);
 
-  // Добавление товара в корзину
+  // Добавление товара в корзину с учетом размера
   const addToCart = (product) => {
     setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === product.id);
+      // Проверяем, есть ли уже такой товар с таким размером в корзине
+      const existingItem = prevCart.find(item => item.id === product.id && item.size === product.size);
+
       if (existingItem) {
+        // Если товар с таким размером есть, увеличиваем его количество
         return prevCart.map(item =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 } // Увеличиваем количество, если товар уже есть
+          item.id === product.id && item.size === product.size
+            ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       } else {
-        return [...prevCart, { ...product, quantity: 1 }]; // Добавляем новый товар
+        // Если товара нет, добавляем новый товар с выбранным размером
+        return [...prevCart, { ...product, quantity: 1 }];
       }
     });
   };
 
- // Удаление товара из корзины
-const removeFromCart = (productId) => {
-  const updatedCart = cart.filter((item) => item.id !== productId);
-  setCart(updatedCart);
+  // Удаление товара из корзины с учетом размера
+  const removeFromCart = (productId, size) => {
+    const updatedCart = cart.filter((item) => item.id !== productId || item.size !== size);
+    setCart(updatedCart);
 
-  // Сохраняем обновленную корзину в localStorage
-  localStorage.setItem('cart', JSON.stringify(updatedCart));
-};
-
+    // Сохраняем обновленную корзину в localStorage
+    localStorage.setItem('cart', JSON.stringify(updatedCart));
+  };
 
   // Очистка корзины
   const clearCart = () => {
@@ -54,19 +57,18 @@ const removeFromCart = (productId) => {
     localStorage.removeItem('cart'); // Удаляем корзину из localStorage
   };
 
-  // Обновление количества товара в корзине
-// Обновление количества товара в корзине
-const updateQuantity = (productId, quantity) => {
-  setCart(prevCart => {
-    return prevCart.map((item) =>
-      item.id === productId
-        ? quantity > 0
-          ? { ...item, quantity } // Если количество больше 0, обновляем
-          : item // Если количество меньше или равно 0, ничего не меняем
-        : item
-    );
-  });
-};
+  // Обновление количества товара в корзине с учетом размера
+  const updateQuantity = (productId, size, quantity) => {
+    setCart(prevCart => {
+      return prevCart.map((item) =>
+        item.id === productId && item.size === size
+          ? quantity > 0
+            ? { ...item, quantity } // Если количество больше 0, обновляем
+            : item // Если количество меньше или равно 0, ничего не меняем
+          : item
+      );
+    });
+  };
 
   return (
     <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart, updateQuantity }}>

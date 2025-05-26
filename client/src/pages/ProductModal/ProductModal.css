@@ -94,7 +94,7 @@
   padding: 30px;
   width: 95%;
   max-width: 1000px;
-  max-height: 120vh;
+  max-height: 85vh;
   overflow-y: auto;
   border-radius: 12px;
   position: relative;
@@ -139,4 +139,30 @@
   color: white;
   resize: none;
 }
+
+.size-button {
+  padding: 10px;
+  margin: 5px;
+  border: 1px solid #ccc;
+  background-color: #333;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.size-button:hover {
+  background-color: #545454;
+}
+
+.size-button.selected {
+  background-color: #4CAF50; /* Зеленый цвет для выбранного */
+  color: white;
+  border-color: #4CAF50;
+  cursor: not-allowed; /* Убираем курсор */
+}
+
+.size-selection {
+  display: flex;
+  flex-wrap: wrap;
+}
+
 

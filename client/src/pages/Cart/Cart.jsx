@@ -12,12 +12,15 @@ function Cart() {
   const { cart, addToCart, removeFromCart, clearCart, updateQuantity } = useCart();
   const [isModalOpen, setIsModalOpen] = useState(false); // Стейт для отображения модального окна
 
+  // Рассчитываем общую цену товаров в корзине
   const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
 
+  // Функция для перехода к оформлению заказа
   const handleGoToCheckout = () => {
     setIsModalOpen(true); // Открываем модальное окно
   };
 
+  // Функция для закрытия модального окна
   const handleCloseModal = () => {
     setIsModalOpen(false); // Закрываем модальное окно
   };
@@ -32,19 +35,22 @@ function Cart() {
           <div>
             <ul>
               {cart.map((item) => (
-                <li key={item.id} className="cart-item">
+                <li key={`${item.id}-${item.size}`} className="cart-item">
+                  {/* Изображение товара */}
                   <img src={item.image_url} alt={item.title} />
                   <div>
                     <h4>{item.title}</h4>
                     <p>{item.description}</p>
                     <span>{item.price} ₽</span>
+                    <p>Размер: {item.size}</p> {/* Отображаем выбранный размер */}
                     <div className="quantity">
-                      <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</button>
+                      {/* Кнопки для изменения количества */}
+                      <button onClick={() => updateQuantity(item.id, item.size, item.quantity - 1)}>-</button>
                       <span>{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
+                      <button onClick={() => updateQuantity(item.id, item.size, item.quantity + 1)}>+</button>
                     </div>
                     {/* Иконка удаления товара */}
-                    <div className="remove-icon" onClick={() => removeFromCart(item.id)}>
+                    <div className="remove-icon" onClick={() => removeFromCart(item.id, item.size)}>
                       <FaTrash className="icon-remove" />
                     </div>
                   </div>

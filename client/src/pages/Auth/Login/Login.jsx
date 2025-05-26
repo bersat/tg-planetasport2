@@ -12,32 +12,34 @@ const Login = () => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+ const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    try {
-      const res = await axios.post('http://localhost:5000/api/login', form);
+  try {
+    const res = await axios.post('http://localhost:5000/api/login', form);
 
-      if (res.data.token) {
-        localStorage.setItem('auth_token', res.data.token);
 
-        // Расшифровка токена для получения роли (если нужно на клиенте)
-        const [payload] = res.data.token.split('.');
-        const decoded = JSON.parse(atob(payload));
-        const role = decoded.role;
+    if (res.data.token) {
+      localStorage.setItem('auth_token', res.data.token);
 
-        if (role === 'admin') {
-          navigate('/admin/adminpanel'); // например, страница для админов
-        } else {
-          navigate('/profile');
-        }
+
+      // Расшифровка токена для получения роли (если нужно на клиенте)
+      const [payload] = res.data.token.split('.');
+      const decoded = JSON.parse(atob(payload));
+      const role = decoded.role;
+
+      if (role === 'admin') {
+        navigate('/admin/adminpanel'); // например, страница для админов
       } else {
-        setStatus(res.data.message || 'Неверный логин или пароль');
+        navigate('/profile');
       }
-    } catch (err) {
-      setStatus(err.response?.data?.message || 'Ошибка соединения с сервером');
+    } else {
+      setStatus(res.data.message || 'Неверный логин или пароль');
     }
-  };
+  } catch (err) {
+    setStatus(err.response?.data?.message || 'Ошибка соединения с сервером');
+  }
+};
 
   return (
     <div className="auth-wrapper">
