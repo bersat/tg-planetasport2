@@ -130,3 +130,37 @@
   text-align: center;
 }
 
+.profile-orders-title {
+  margin-top: 20px;
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+.orders-list {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.order-item {
+  background-color: #272626;
+  margin: 10px 0;
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.order-item h4 {
+  margin: 0;
+  font-size: 1.2em;
+}
+
+.order-item ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.order-item li {
+  margin-left: 10px;
+}
+
+

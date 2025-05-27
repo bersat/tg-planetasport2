@@ -1,0 +1,102 @@
+/* Общий контейнер для страницы заказов */
+.admin-orders {
+  max-width: 960px;
+  margin: 100px auto 40px;
+  padding: 25px;
+  background-color: #1f1f1f;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  color: #f1f1f1;
+}
+
+/* Заголовок страницы */
+.admin-orders h1 {
+  font-size: 28px;
+  margin-bottom: 20px;
+  color: #ffffff;
+}
+
+/* Заголовок для раздела товаров */
+.order-items h5 {
+  font-size: 22px;
+  margin-top: 20px;
+  color: #ffffff;
+}
+
+/* Список товаров */
+.order-items ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Оформление деталей товара */
+.order-item-details {
+  background-color: #2b2b2b;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #3a3a3a;
+}
+
+/* Описание товара */
+.order-item-details p {
+  color: #bbb;
+  font-size: 14px;
+  margin: 5px 0;
+}
+
+/* Кнопки действий */
+.actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+/* Кнопка просмотра заказа */
+.actions button.view-order {
+  padding: 10px 16px;
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+}
+
+.actions button.view-order:hover {
+  background-color: #1976d2;
+}
+
+/* Кнопка изменения статуса заказа */
+.actions button.status {
+  padding: 10px 16px;
+  background-color: #ff9800;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+}
+
+.actions button.status:hover {
+  background-color: #fb8c00;
+}
+
+/* Кнопка удаления заказа */
+.actions button.delete-order {
+  padding: 10px 16px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+}
+
+.actions button.delete-order:hover {
+  background-color: #d32f2f;
+}

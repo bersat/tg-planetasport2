@@ -1,5 +1,5 @@
-// src/components/OrderModal.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import './OrderModal.css';
 
 function OrderModal({ cart, onClose }) {
@@ -9,9 +9,38 @@ function OrderModal({ cart, onClose }) {
     email: '',
     address: '',
   });
+  const [formError, setFormError] = useState('');
+  const [isAuthorized, setIsAuthorized] = useState(null);
+  const [userId, setUserId] = useState(null);
 
+  // Расчет общей суммы и количества
   const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+
+  // Проверка авторизации
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      try {
+        const decodedToken = JSON.parse(atob(token.split('.')[1]));
+        const expirationTime = decodedToken.exp * 1000;
+        const currentTime = Date.now();
+
+        if (currentTime > expirationTime) {
+          localStorage.removeItem('auth_token');
+          setIsAuthorized(false);
+        } else {
+          setIsAuthorized(true);
+          setUserId(decodedToken.id);
+        }
+      } catch (error) {
+        console.error('Ошибка декодирования токена:', error);
+        setIsAuthorized(false);
+      }
+    } else {
+      setIsAuthorized(false);
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,10 +50,50 @@ function OrderModal({ cart, onClose }) {
     });
   };
 
-  const handleSubmit = () => {
-    const orderNumber = Math.floor(Math.random() * 100000);
-    alert(`Номер заказа: №${orderNumber}\nТелефон: ${formData.phone}\nЭлектронная почта: ${formData.email}\nТовары: ${totalItems} шт.\nОбщая сумма: ${totalPrice} ₽`);
-    onClose();
+  const handleSubmit = async () => {
+    const { name, phone, email, address } = formData;
+
+    // Проверка на заполнение всех полей формы
+    if (!name || !phone || !email || !address) {
+      setFormError('Пожалуйста, заполните все поля перед оформлением заказа.');
+      return;
+    }
+
+    setFormError(''); // Сброс ошибки при успешной валидации
+
+    if (!isAuthorized || !userId) {
+      alert('Пожалуйста, авторизуйтесь для оформления заказа.');
+      return;
+    }
+
+    // Формируем объект заказа с товарами и user_id
+    const orderData = {
+      user_id: userId,
+      name,
+      phone,
+      email,
+      address,
+      totalItems,
+      totalPrice,
+      orderItems: cart.map((item) => ({
+        product_id: item.id,
+        title: item.title,
+        price: item.price,
+        quantity: item.quantity,
+        size: item.size || null, // Optional size field
+        color: item.color || null, // Optional color field
+      })),
+    };
+
+    try {
+      // Отправка данных на сервер
+      const response = await axios.post('http://localhost:5000/api/orders', orderData);
+      alert(`Ваш заказ №${response.data.orderNumber} оформлен!`);
+      onClose(); // Закрытие модального окна после успешного оформления
+    } catch (error) {
+      console.error('Ошибка при оформлении заказа:', error);
+      alert('Ошибка при оформлении заказа. Попробуйте позже.');
+    }
   };
 
   return (
@@ -32,18 +101,31 @@ function OrderModal({ cart, onClose }) {
       <div className="modal">
         <button className="close-btn" onClick={onClose}>×</button>
         <h2>Оформление заказа</h2>
+
+        {/* Список товаров в заказе */}
         <ul className="order-items">
           {cart.map((item) => (
-            <li key={item.id}>
-              <span>{item.title} (x{item.quantity})</span>
+            <li key={`${item.id}-${item.size || 'no-size'}`}>
+              <div>
+                <span>{item.title} (x{item.quantity})</span>
+                {item.size && <span> — Размер: {item.size}</span>}
+                {item.color && <span> — Цвет: {item.color}</span>}
+              </div>
               <span>{item.price} ₽</span>
             </li>
           ))}
         </ul>
+
+        {/* Сумма и количество товаров */}
         <div className="order-summary">
           <p>Общее количество товаров: {totalItems}</p>
           <p>Общая сумма: {totalPrice} ₽</p>
         </div>
+
+        {/* Ошибка при заполнении формы */}
+        {formError && <p className="form-error">{formError}</p>}
+
+        {/* Форма для данных клиента */}
         <form className="order-form">
           <input
             type="text"
@@ -77,6 +159,8 @@ function OrderModal({ cart, onClose }) {
             onChange={handleChange}
             required
           />
+
+          {/* Кнопка для отправки заказа */}
           <button type="button" onClick={handleSubmit}>Оформить заказ</button>
         </form>
       </div>

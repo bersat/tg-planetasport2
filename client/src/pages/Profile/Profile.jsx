@@ -4,6 +4,7 @@ import axios from 'axios';
 
 const Profile = () => {
   const [user, setUser] = useState(null);
+  const [orders, setOrders] = useState([]);  // Новое состояние для заказов
   const [formData, setFormData] = useState({
     full_name: '',
     email: '',
@@ -19,6 +20,8 @@ const Profile = () => {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem('auth_token');
+
+        // Запрос профиля пользователя
         const res = await axios.get('http://localhost:5000/api/profile', {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -31,6 +34,24 @@ const Profile = () => {
           email: res.data.email,
           phone: res.data.phone
         });
+
+        // Запрос заказов пользователя
+        try {
+          const ordersRes = await axios.get('http://localhost:5000/api/orders', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          // Если заказов нет, то пустой массив
+          setOrders(ordersRes.data || []); // Сохраняем заказы пользователя
+
+        } catch (err) {
+          console.error('Ошибка при загрузке заказов:', err);
+          // Если заказов нет или произошла ошибка, оставляем пустой массив
+          setOrders([]);
+        }
+
       } catch (err) {
         console.error('Ошибка загрузки профиля:', err);
         setError('Ошибка загрузки данных. Проверьте авторизацию.');
@@ -167,6 +188,30 @@ const Profile = () => {
           <p><span className="profile-label">Телефон:</span> {user.phone}</p>
           <button className="edit-btn" onClick={() => setIsEditing(true)}>Редактировать</button>
         </div>
+      )}
+
+      {/* Отображаем заказы пользователя */}
+      <h3 className="profile-orders-title">Ваши заказы</h3>
+      {orders.length === 0 ? (
+        <p>У вас нет заказов.</p>
+      ) : (
+        <ul className="orders-list">
+          {orders.map((order) => (
+            <li key={order.order_number} className="order-item">
+              <h4>Заказ №{order.order_number}</h4>
+              <p>Дата заказа: {new Date(order.created_at).toLocaleDateString()}</p>
+              <p>Общая сумма: {order.total_price} ₽</p>
+              <p>Товары:</p>
+              <ul>
+                {order.items.map((item) => (
+                  <li key={item.product_id}>
+                    {item.title} — {item.quantity} шт. (Размер: {item.size})
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );

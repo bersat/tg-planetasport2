@@ -117,3 +117,11 @@
 .order-form input + input {
   margin-top: 15px;
 }
+
+.form-error {
+  color: red;
+  margin-top: 8px;
+  font-size: 14px;
+  transition: opacity 0.3s ease;
+}
+

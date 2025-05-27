@@ -22,6 +22,8 @@ import DeliveryConditions from "./pages/DeliveryConditions/DeliveryConditions";
 import LoyaltyProgram from "./pages/LoyaltyProgram/LoyaltyProgram";
 import ReturnPolicy from "./pages/ReturnPolicy/ReturnPolicy";
 import WarrantyPolicy from "./pages/WarrantyPolicy/WarrantyPolicy";
+import AdminOrdersPage from "./pages/AdminOrdersPage/AdminOrdersPage";
+import PrivateRoute from "./PrivateRouter";
 
 
 function App() {
@@ -53,6 +55,10 @@ function App() {
             <Route path={'loyalty-program'} element={<LoyaltyProgram />} />
             <Route path={'returns'} element={<ReturnPolicy />} />
             <Route path={'product-warranty'} element={<WarrantyPolicy />} />
+            <Route
+              path={'/admin'}
+              element={<PrivateRoute element={<AdminOrdersPage />} />}
+            />
           </Routes>
           <Footer />
         </FavoritesProvider>

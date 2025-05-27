@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { FaHome, FaUser, FaThLarge, FaShoppingCart, FaHeart } from 'react-icons/fa';
 import './Footer.css';
@@ -7,64 +7,59 @@ import { useFavorites } from '../FavoritesContext';  // Импортируем u
 
 function Footer() {
   const navigate = useNavigate();  // Хук для навигации
-  const [isAuthorized, setIsAuthorized] = useState(null);  // Стейт для хранения состояния авторизации
   const { cart } = useCart();
   const { favorites } = useFavorites();  // Извлекаем избранные товары из контекста
 
+  // Рассчитываем общее количество товаров в корзине
   const totalQuantity = (cart && Array.isArray(cart))
     ? cart.reduce((total, item) => total + item.quantity, 0)
     : 0;
 
-  const totalFavorites = favorites.length;  // Количество избранных товаров
+  // Количество избранных товаров
+  const totalFavorites = favorites.length;
 
   // Логика проверки авторизации и токена
-  const checkAuth = () => {
+  const isAuthenticated = () => {
     const token = localStorage.getItem('auth_token');  // Получаем токен из localStorage
-    console.log("Токен из localStorage:", token);  // Логируем токен
-
-    if (!token) {
-      console.log("Токен не найден. Пользователь не авторизован.");
-      return false; // Если токен отсутствует, то не авторизован
-    }
+    if (!token) return false;  // Если токен отсутствует, то не авторизован
 
     try {
-      // Пытаемся декодировать токен (предполагаем, что это JWT)
       const decodedToken = JSON.parse(atob(token.split('.')[1])); // Декодируем JWT токен
-
       const expirationTime = decodedToken.exp * 1000; // Время истечения токена в миллисекундах
       const currentTime = Date.now();
-      console.log("Текущее время:", currentTime);  // Логируем текущее время
-      console.log("Время истечения токена:", expirationTime);  // Логируем время истечения токена
-
-      if (currentTime > expirationTime) {
-        // Если токен истек
-        console.log("Токен истек. Удаляем токен.");
-        localStorage.removeItem('auth_token'); // Удаляем токен из localStorage
-        return false;
-      }
-
-      console.log("Токен действителен.");
-      return true; // Токен действителен
+      return currentTime <= expirationTime;  // Проверка на истечение токена
     } catch (error) {
       console.error("Ошибка декодирования токена:", error);
       return false;
     }
   };
 
+  // Получение роли пользователя
+  const getUserRole = () => {
+    const token = localStorage.getItem('auth_token');
+    if (!token) return null;
+
+    try {
+      const decodedToken = JSON.parse(atob(token.split('.')[1])); // Декодируем JWT токен
+      return decodedToken.role;  // Возвращаем роль пользователя
+    } catch (error) {
+      console.error("Ошибка получения роли:", error);
+      return null;
+    }
+  };
+
+  // Определяем ссылку для "Кабинет" в зависимости от состояния авторизации
+  const cabinetLink = isAuthenticated() ? "/profile" : "/login"; // Путь зависит от авторизации
+
+  // Проверяем роль, чтобы отобразить ссылку для админа
+  const isAdmin = getUserRole() === 'admin';  // Проверка на роль 'admin'
+
   // Перенаправляем пользователя на login, если токен недействителен
   useEffect(() => {
-    const authorized = checkAuth();
-    setIsAuthorized(authorized); // Устанавливаем стейт авторизации
-
-    if (!authorized) {
+    if (!isAuthenticated()) {
       navigate("/login");  // Перенаправляем на страницу логина, если токен недействителен
     }
-  }, [navigate]);
-
-  // Если стейт авторизации еще не установлен, ничего не рендерим
-  if (isAuthorized === null) {
-    return null;  // Можно поставить здесь спиннер или что-то еще
-  }
+  }, []);
 
   return (
     <footer className="footer">
@@ -75,14 +70,12 @@ function Footer() {
             <span>Главная</span>
           </NavLink>
         </li>
-        {isAuthorized && (
-          <li>
-            <NavLink to="/profile" className={({ isActive }) => isActive ? 'active' : ''}>
-              <FaUser className="icon" />
-              <span>Кабинет</span>
-            </NavLink>
-          </li>
-        )}
+        <li>
+          <NavLink to={cabinetLink} className={({ isActive }) => isActive ? 'active' : ''}>
+            <FaUser className="icon" />
+            <span>Кабинет</span>
+          </NavLink>
+        </li>
         <li>
           <NavLink to="/catalog" className={({ isActive }) => isActive ? 'active' : ''}>
             <FaThLarge className="icon" />
@@ -107,6 +100,13 @@ function Footer() {
             <span>Избранное</span>
           </NavLink>
         </li>
+        {isAdmin && (  // Отображаем ссылку для админов
+          <li>
+            <NavLink to="/admin" className={({ isActive }) => isActive ? 'active' : ''}>
+              <span>Админ панель</span>
+            </NavLink>
+          </li>
+        )}
       </ul>
     </footer>
   );

@@ -1,32 +1,55 @@
 import React, { useEffect, useState } from 'react';
-import { useFavorites } from '../../components/FavoritesContext';
 import { FaTrash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import Slider from 'react-slick';
 import './Favorites.css';
+import axios from 'axios';
 
 function Favorites() {
-  const { favorites, removeFromFavorites, clearFavorites } = useFavorites();
-  const navigate = useNavigate();
-
+  const [favorites, setFavorites] = useState([]);  // Инициализация как пустой массив
   const [sliderEnabled, setSliderEnabled] = useState(false);
   const containerRef = React.createRef();
+  const navigate = useNavigate();
+  const token = localStorage.getItem('auth_token');  // Проверка авторизации
 
-  // Логирование структуры данных для проверки
+  // Загрузка избранных товаров
+  const loadFavorites = async () => {
+    const isAuthenticated = Boolean(token);  // проверка авторизации
+
+    if (isAuthenticated) {
+      try {
+        const response = await axios.get(`http://localhost:5000/api/favorites`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log('Избранные товары:', response.data);
+        if (Array.isArray(response.data)) {
+          setFavorites(response.data);  // Добавлено обновление состояния
+        } else {
+          console.error('Получены некорректные данные');
+        }
+      } catch (error) {
+        console.error('Ошибка при получении избранных товаров:', error);
+      }
+    } else {
+      console.log('Пользователь не авторизован');
+    }
+  };
+
+  // Загрузка избранных товаров при монтировании компонента
   useEffect(() => {
-    console.log(favorites);  // Посмотрим, что хранится в favorites
-  }, [favorites]);
+    loadFavorites();
+  }, [token]);
 
-  // Рассчитываем общую сумму
-  const totalPrice = favorites.reduce((total, item) => {
+  // Проверка и расчет общей суммы
+  const totalPrice = (favorites || []).reduce((total, item) => {
     const price = Number(item.price) || 0;
-    const quantity = Number(item.quantity) || 1; // Если quantity не число, используем 1
+    const quantity = Number(item.quantity) || 1;
     return total + price * quantity;
   }, 0);
 
-  // Рассчитываем количество товаров (суммируем все quantity)
-  const totalQuantity = favorites.reduce((total, item) => {
-    const quantity = Number(item.quantity) || 1; // Если quantity не число, используем 1
+  // Проверка и расчет количества товаров
+  const totalQuantity = (favorites || []).reduce((total, item) => {
+    const quantity = Number(item.quantity) || 1;
     return total + quantity;
   }, 0);
 
@@ -59,27 +82,33 @@ function Favorites() {
     ],
   };
 
-  // Функция для открытия товара в модальном окне на странице каталога
+  // Функция для открытия товара в модальном окне
   const openProductInModal = (productId) => {
     navigate(`/catalog?productId=${productId}`);
   };
 
-  // Проверяем размер контейнера и активируем карусель
-  useEffect(() => {
-    const checkSliderEnable = () => {
-      if (containerRef.current) {
-        const containerWidth = containerRef.current.offsetWidth;
-        setSliderEnabled(favorites.length * 250 > containerWidth); // 250px - ширина товара с отступами
-      }
-    };
+  // Функция для удаления товара из избранного
+  const removeFromFavorites = async (productId) => {
+    if (!token) {
+      console.log('Пользователь не авторизован');
+      return;
+    }
+    try {
+      await axios.delete(`http://localhost:5000/api/favorites/${productId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      // Убираем товар из локального состояния
+      setFavorites(favorites.filter(item => item.id !== productId));
 
-    checkSliderEnable();
-    window.addEventListener('resize', checkSliderEnable);
-
-    return () => {
-      window.removeEventListener('resize', checkSliderEnable);
-    };
-  }, [favorites.length]);
+      // Перезагружаем страницу после успешного удаления
+      window.location.reload();  // Это перезагрузит страницу и обновит данные
+    } catch (error) {
+      console.error('Ошибка при удалении товара из избранного:', error);
+      alert('Ошибка при удалении товара');
+    }
+  };
 
   return (
     <div className="favorites-container" ref={containerRef}>
@@ -88,7 +117,6 @@ function Favorites() {
         <p className="favorites-message">Ваш список избранных товаров пуст.</p>
       ) : (
         <div>
-          {/* Проверяем, нужно ли использовать карусель */}
           {sliderEnabled ? (
             <Slider {...settings}>
               {favorites.map((item) => (
@@ -98,10 +126,7 @@ function Favorites() {
                   <p>{item.description}</p>
                   <span>{item.price} ₽</span>
                   <div className="favorite-actions">
-                    <button
-                      className="details-btn"
-                      onClick={() => openProductInModal(item.id)}
-                    >
+                    <button className="details-btn" onClick={() => openProductInModal(item.id)}>
                       Подробнее
                     </button>
                     <div className="remove-icon" onClick={() => removeFromFavorites(item.id)}>
@@ -120,10 +145,7 @@ function Favorites() {
                   <p>{item.description}</p>
                   <span>{item.price} ₽</span>
                   <div className="favorite-actions">
-                    <button
-                      className="details-btn"
-                      onClick={() => openProductInModal(item.id)}
-                    >
+                    <button className="details-btn" onClick={() => openProductInModal(item.id)}>
                       Подробнее
                     </button>
                     <div className="remove-icon" onClick={() => removeFromFavorites(item.id)}>
@@ -137,9 +159,6 @@ function Favorites() {
           <div className="total">
             <span>Итого: {totalPrice} ₽</span>
             <span>Количество товаров: {totalQuantity}</span>
-            <button className="clear-favorites-btn" onClick={clearFavorites}>
-              Очистить избранное
-            </button>
           </div>
         </div>
       )}

@@ -16,8 +16,8 @@ const colorMapping = {
   beige: 'бежевый',
   'dark-brown': 'тёмно-коричневый',
   swamp: 'болотный',
-  'dark-blue':'тёмно-синий',
-   'light-lavender': 'светло-сиреневый',
+  'dark-blue': 'тёмно-синий',
+  'light-lavender': 'светло-сиреневый',
   // Добавьте другие цвета по необходимости
 };
 
@@ -30,17 +30,11 @@ function ProductModal({ productId, onClose }) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [selectedSize, setSelectedSize] = useState(null); // Состояние для выбранного размера
+  const [stock, setStock] = useState(0); // Состояние для количества товара в наличии
   const { addToCart } = useCart();
 
   const token = localStorage.getItem('auth_token'); // Получаем токен из localStorage
   const [userId, setUserId] = useState(null);
-
-  // Функция для получения второго слова из ФИО (имени)
-  const getFirstName = (fullName) => {
-    if (!fullName) return ''; // Если fullName пустое или undefined, возвращаем пустую строку
-    const nameParts = fullName.split(' '); // Разделяем строку по пробелам
-    return nameParts.length > 1 ? nameParts[1] : ''; // Возвращаем второе слово (имя), если оно есть, иначе пустую строку
-  };
 
   useEffect(() => {
     if (token) {
@@ -59,7 +53,10 @@ function ProductModal({ productId, onClose }) {
 
     // Загрузка данных о товаре
     axios.get(`${API_BASE}/products/${productId}`)
-      .then(res => setProduct(res.data))
+      .then(res => {
+        setProduct(res.data);
+        setStock(res.data.quantity);  // Получаем количество товара из поля 'quantity'
+      })
       .catch(console.error);
 
     // Загрузка отзывов
@@ -94,12 +91,80 @@ function ProductModal({ productId, onClose }) {
     return description.split('\n').map((str, index) => <p key={index}>{str}</p>);
   };
 
+  // Функция для получения второго слова из ФИО (имени)
+  const getFirstName = (fullName) => {
+    if (!fullName) return ''; // Если fullName пустое или undefined, возвращаем пустую строку
+    const nameParts = fullName.split(' '); // Разделяем строку по пробелам
+    return nameParts.length > 1 ? nameParts[1] : ''; // Возвращаем второе слово (имя), если оно есть, иначе пустую строку
+  };
+
   // Обработчик выбора размера
   const handleSizeSelect = (size) => {
-    if (selectedSize) return; // Если размер уже выбран, игнорируем клики
-    setSelectedSize(size); // Устанавливаем выбранный размер в состояние
+    setSelectedSize(size); // ✅ Позволяет менять выбор
     console.log(`Вы выбрали размер: ${size}`);
   };
+
+  // Функция для добавления товара в корзину через сервер
+ const handleAddToCart = async () => {
+  // Если товар без размеров (или пустой массив), просто добавляем его в корзину
+  if (!product.sizes || product.sizes.length === 0) {
+    const productData = {
+      product_id: product.id,
+      title: product.title,
+      description: product.description,
+      price: product.price,
+      image_url: product.image_url,
+      quantity: 1, // Можно добавить логику для работы с количеством
+      size: null, // Здесь указываем null, если товар не имеет размеров
+    };
+
+    try {
+      const response = await axios.post(`${API_BASE}/cart`, productData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.status === 201) {
+        addToCart(productData); // Обновляем корзину в контексте
+        alert("Товар добавлен в корзину!");
+      }
+    } catch (error) {
+      console.error('Ошибка при добавлении товара в корзину:', error);
+      alert("Не удалось добавить товар в корзину. Попробуйте позже.");
+    }
+  } else {
+    // Если товар имеет размеры, проверяем, выбран ли размер
+    if (!selectedSize) {
+      alert("Пожалуйста, выберите размер товара.");
+      return;
+    }
+
+    // Формируем данные для отправки на сервер
+    const productData = {
+      product_id: product.id,
+      title: product.title,
+      description: product.description,
+      price: product.price,
+      image_url: product.image_url,
+      quantity: 1, // Можно добавить логику для работы с количеством
+      size: selectedSize,  // Передаем выбранный размер
+    };
+
+    try {
+      const response = await axios.post(`${API_BASE}/cart`, productData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.status === 201) {
+        addToCart(productData); // Обновляем корзину в контексте
+        alert("Товар добавлен в корзину!");
+      }
+    } catch (error) {
+      console.error('Ошибка при добавлении товара в корзину:', error);
+      alert("Не удалось добавить товар в корзину. Попробуйте позже.");
+    }
+  }
+};
+
 
   if (!product) return null;
 
@@ -118,30 +183,41 @@ function ProductModal({ productId, onClose }) {
 
         {/* Характеристики товара */}
         <div className="product-characteristics">
-          <p><strong>Размеры:</strong></p>
-          {product.sizes && product.sizes.length > 0 ? (
-            <div className="size-selection">
-              {product.sizes.map((size, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleSizeSelect(size)}
-                  className={`size-button ${size === selectedSize ? 'selected' : ''}`}
-                  disabled={selectedSize !== null && size !== selectedSize} // Отключаем кнопки после выбора
-                >
-                  {size}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <p>Размеры для этого товара не указаны.</p>
+          {product.sizes && product.sizes.length > 0 && (
+            <>
+              <p><strong>Размеры:</strong></p>
+              <div className="size-selection">
+                {product.sizes.map((size, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleSizeSelect(size)}
+                    className={`size-button ${size === selectedSize ? 'selected' : ''}`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </>
           )}
 
           <p><strong>Цвет:</strong> {colorMapping[product.color] || product.color}</p>
           <div className="color-box" style={{ backgroundColor: product.color === 'multicolor' ? '#ccc' : product.color }}></div>
         </div>
 
-        <div><spap style={{fontWeight:'700'}}>Цена:</spap> <span className="product-price"> {product.price} ₽</span></div>
-        <button onClick={() => addToCart({ ...product, size: selectedSize })} disabled={!selectedSize}>В корзину</button>
+        <div><span style={{ fontWeight: '700' }}>Цена:</span> <span className="product-price"> {product.price} ₽</span></div>
+
+        {/* Отображаем количество товара в наличии */}
+        <p className="quantity">
+          <span className="quantity-circle"></span>
+          <span className="quantity-number">{stock} в наличии</span>
+        </p>
+
+        <button
+          onClick={handleAddToCart} // Используем обновлённый обработчик добавления товара
+          disabled={product.sizes && product.sizes.length > 0 && !selectedSize}
+        >
+          В корзину
+        </button>
 
         <hr />
 

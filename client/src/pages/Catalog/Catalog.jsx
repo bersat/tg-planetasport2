@@ -34,6 +34,7 @@ function Catalog() {
   const [products, setProducts] = useState([]);
   const [modalProductId, setModalProductId] = useState(null);
   const { favorites, addToFavorites, removeFromFavorites } = useFavorites();
+  const [isPulsing, setIsPulsing] = useState(false);
 
   // Фильтры
   const [brands, setBrands] = useState([]);
@@ -95,17 +96,6 @@ function Catalog() {
     }
   };
 
-  const fetchImage = async (imageId) => {
-    try {
-      console.log(`Fetching image for imageId: ${imageId}`);  // Логируем передаваемый ID
-      const res = await axios.get(`${API_BASE}/product_image/${imageId}`);
-      console.log(`Image URL: ${res.data.imageUrl}`);  // Логируем полученный URL изображения
-      return res.data.imageUrl;
-    } catch (error) {
-      console.error('Ошибка при получении изображения:', error);
-      return null;
-    }
-  };
 
   // Загрузка товаров с учётом всех фильтров (включая category, gender, type из URL)
   useEffect(() => {
@@ -216,13 +206,46 @@ function Catalog() {
 
   const isFavorite = (productId) => favorites.some(prod => prod.id === productId);
 
-  const toggleFavorite = (product) => {
+  const toggleFavorite = async (product) => {
+  // Проверяем, авторизован ли пользователь через localStorage
+    const isAuthenticated = Boolean(localStorage.getItem('auth_token'));
+
+      setIsPulsing(true);
+
+  // Отключаем пульсацию через 1 секунду (пульсация длится 1 секунду)
+  setTimeout(() => setIsPulsing(false), 1000);
+
+  try {
     if (isFavorite(product.id)) {
-      removeFromFavorites(product.id); // Убираем из избранного
+      removeFromFavorites(product.id); // Убираем товар из локальных избранных
+
+      if (isAuthenticated) {
+        const token = localStorage.getItem('auth_token');
+        await axios.delete('http://localhost:5000/api/favorites', { productId: product.id }, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
     } else {
-      addToFavorites(product); // Добавляем в избранное
+      addToFavorites(product); // Добавляем товар в локальные избранные
+
+      if (isAuthenticated) {
+        const token = localStorage.getItem('auth_token');
+       await axios.post('http://localhost:5000/api/favorites', {
+  product_id: product.id,
+  title: product.title,
+  description: product.description,
+  price: product.price,
+  image_url: product.image_url
+}, {
+  headers: { Authorization: `Bearer ${token}` },
+});
+
+      }
     }
-  };
+  } catch (err) {
+    console.error('Ошибка при обновлении избранного:', err);
+  }
+};
 
   // Заголовок
   const renderHeader = () => {
@@ -418,7 +441,10 @@ const getColorStyle = (color) => {
           </div>
           <h4>{prod.title}</h4>
           <p className="brand">Бренд: {prod.brand_name || 'Неизвестно'}</p>
-          <p className='size'>Размеры: {prod.sizes && prod.sizes.length > 0 ? prod.sizes.join(', ') : 'Нет данных'}</p>
+          {prod.sizes && prod.sizes.length > 0 && (
+  <p className='size'>Размеры: {prod.sizes.join(', ')}</p>
+)}
+
 
             <p className='price'>Цена: <span> {prod.price} ₽</span></p>
 
@@ -445,13 +471,17 @@ const getColorStyle = (color) => {
             <button className="view-details" onClick={() => handleOpenProductModal(prod.id)}>
               Подробнее
             </button>
-            <div className="favorite-btn" onClick={() => toggleFavorite(prod)}>
-              {isFavorite(prod.id) ? (
-                <FaHeart color="red" size={24} />
-              ) : (
-                <FaRegHeart color="white" size={24} />
-              )}
-            </div>
+           <div
+  className={`favorite-btn ${isPulsing ? 'pulsing' : ''}`}
+  onClick={() => toggleFavorite(prod)}
+>
+  {isFavorite(prod.id) ? (
+    <FaHeart color="red" size={24} />
+  ) : (
+    <FaRegHeart color="white" size={24} />
+  )}
+</div>
+
           </div>
         </div>
       ))}

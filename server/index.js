@@ -594,6 +594,296 @@ app.get('/api/products/:productId', async (req, res) => {
     }
 });
 
+app.post('/api/orders', async (req, res) => {
+    const { user_id, name, phone, email, address, totalItems, totalPrice, orderItems } = req.body;
+
+    if (!user_id) {
+        return res.status(400).json({ error: 'Пользователь не авторизован' });
+    }
+
+    try {
+        // Получаем максимальный номер заказа, чтобы сгенерировать новый
+        const result = await db.query('SELECT MAX(order_number) AS max_order_number FROM orders');
+        const maxOrderNumber = result.rows[0].max_order_number || 0; // Если заказов нет, начинаем с 1
+
+        const orderNumber = maxOrderNumber + 1; // Генерация следующего номера заказа
+
+        // Вставляем данные в таблицу заказов, включая user_id
+        const orderRes = await db.query(
+            'INSERT INTO orders (user_id, name, phone, email, address, total_items, total_price, order_number) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, order_number',
+            [user_id, name, phone, email, address, totalItems, totalPrice, orderNumber]
+        );
+
+        const orderId = orderRes.rows[0].id;
+
+        // Вставляем товары в таблицу order_items
+        const orderItemsPromises = orderItems.map(item => {
+            return db.query(
+                'INSERT INTO order_items (order_id, product_id, title, price, quantity, size) VALUES ($1, $2, $3, $4, $5, $6)',
+                [orderId, item.product_id, item.title, item.price, item.quantity, item.size]
+            );
+        });
+
+        await Promise.all(orderItemsPromises);
+
+        // Отправляем успешный ответ с номером заказа
+        res.status(201).json({ orderNumber: orderRes.rows[0].order_number });
+    } catch (error) {
+        console.error('Error creating order:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.get('/api/orders', async (req, res) => {
+    // Получаем user_id из токена
+    const token = req.headers.authorization?.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ error: 'Пользователь не авторизован' });
+    }
+
+    try {
+        // Расшифровываем токен
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decodedToken.id; // Получаем user_id из токена
+
+        // Запрашиваем заказы для конкретного пользователя
+        const ordersResult = await db.query(
+            'SELECT id, order_number, total_price, total_items, created_at FROM orders WHERE user_id = $1 ORDER BY created_at DESC',
+            [userId]
+        );
+
+        if (ordersResult.rows.length === 0) {
+            return res.status(404).json({ message: 'У вас нет заказов.' });
+        }
+
+        const orders = ordersResult.rows;
+
+        // Для каждого заказа получаем детали
+        const orderDetailsPromises = orders.map(async (order) => {
+            const orderItemsResult = await db.query(
+                'SELECT product_id, title, price, quantity, size FROM order_items WHERE order_id = $1',
+                [order.id]
+            );
+            return { ...order, items: orderItemsResult.rows };
+        });
+
+        const fullOrders = await Promise.all(orderDetailsPromises);
+
+        res.status(200).json(fullOrders);
+    } catch (error) {
+        console.error('Ошибка при получении заказов:', error);
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
+// Получение всех заказов с данными пользователя
+app.get('/api/admin/orders', authenticateToken, async (req, res) => {
+    try {
+        // Проверяем, что пользователь имеет роль 'admin'
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Доступ запрещен' });
+        }
+
+        // Получаем все заказы с данными пользователя и товарами
+        const ordersResult = await db.query(`
+            SELECT o.id AS order_id, o.created_at, o.total_price, u.full_name, u.email,
+                   oi.title, oi.price, oi.quantity, oi.size
+            FROM orders o
+            JOIN users u ON o.user_id = u.id
+            LEFT JOIN order_items oi ON o.id = oi.order_id
+            ORDER BY o.created_at DESC
+        `);
+
+        // Преобразуем результат в структуру, нужную для клиента
+        const orders = ordersResult.rows.reduce((acc, order) => {
+            const existingOrder = acc.find(o => o.order_id === order.order_id);
+            if (existingOrder) {
+                existingOrder.items.push({
+                    product_name: order.title,
+                    price: order.price,
+                    quantity: order.quantity,
+                    size: order.size || 'Не указан',
+                });
+            } else {
+                acc.push({
+                    order_id: order.order_id,
+                    created_at: order.created_at,
+                    total_price: order.total_price,
+                    full_name: order.full_name,
+                    email: order.email,
+                    items: [{
+                        product_name: order.title,
+                        price: order.price,
+                        quantity: order.quantity,
+                        size: order.size || 'Не указан',
+                    }]
+                });
+            }
+            return acc;
+        }, []);
+
+        res.json(orders); // Возвращаем массив заказов с товарами
+    } catch (err) {
+        console.error('Ошибка при получении заказов:', err);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
+// Добавление товара в избранное
+app.post('/api/favorites', authenticateToken, async (req, res) => {
+    const { product_id, title, description, price, image_url } = req.body;
+    const user_id = req.user.id;
+
+    console.log("Добавляем товар:", req.body); // Логирование данных, полученных от клиента
+
+    if (!product_id || !title || !price) {
+        return res.status(400).json({ message: 'Необходимы обязательные параметры (product_id, title, price)' });
+    }
+
+    try {
+        // Проверка, есть ли уже этот товар в избранном у данного пользователя
+        const existingFavorite = await db.query(
+            'SELECT * FROM favorites WHERE user_id = $1 AND product_id = $2',
+            [user_id, product_id]
+        );
+
+        if (existingFavorite.rows.length > 0) {
+            return res.status(400).json({ message: 'Товар уже добавлен в избранное' });
+        }
+
+        // Добавляем товар в избранное
+        await db.query(
+            'INSERT INTO favorites (user_id, product_id, title, description, price, image_url) VALUES ($1, $2, $3, $4, $5, $6)',
+            [user_id, product_id, title, description, price, image_url]
+        );
+
+        res.status(201).json({ message: 'Товар успешно добавлен в избранное' });
+    } catch (err) {
+        console.error('Ошибка при добавлении товара в избранное:', err); // Логирование ошибки
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
+
+// Получение списка избранных товаров
+app.get('/api/favorites', authenticateToken, async (req, res) => {
+    const user_id = req.user.id;
+
+    try {
+        const result = await db.query('SELECT * FROM favorites WHERE user_id = $1', [user_id]);
+        res.json(result.rows);  // Отправляем избранные товары
+    } catch (err) {
+        console.error('Ошибка при получении избранных товаров:', err);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
+
+// Удаление товара из избранного
+app.delete('/api/favorites/:id', authenticateToken, async (req, res) => {
+    const { id } = req.params;
+    const user_id = req.user.id;
+
+    try {
+        // Проверяем, существует ли товар в избранном у пользователя
+        const favorite = await db.query('SELECT * FROM favorites WHERE id = $1 AND user_id = $2', [id, user_id]);
+
+        if (favorite.rows.length === 0) {
+            return res.status(404).json({ message: 'Товар не найден в избранном' });
+        }
+
+        // Удаляем товар из избранного
+        await db.query('DELETE FROM favorites WHERE id = $1', [id]);
+
+        res.json({ message: 'Товар удален из избранного' });
+    } catch (err) {
+        console.error('Ошибка при удалении товара из избранного:', err);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
+app.post('/api/cart', authenticateToken, async (req, res) => {
+    const { product_id, title, description, price, image_url, quantity, size } = req.body;
+    const user_id = req.user.id;
+
+    console.log("Добавляем товар в корзину:", req.body);
+
+    // Проверка обязательных параметров
+    if (!product_id || !title || !price || !quantity) {
+        return res.status(400).json({ message: 'Необходимы обязательные параметры (product_id, title, price, quantity)' });
+    }
+
+    // Если размер товара не указан, передаем null
+    const sizeToInsert = size || null;
+
+    try {
+        // Проверка, есть ли уже этот товар в корзине у данного пользователя
+        const existingItem = await db.query(
+            'SELECT * FROM cart WHERE user_id = $1 AND product_id = $2',
+            [user_id, product_id]
+        );
+
+        if (existingItem.rows.length > 0) {
+            // Если товар уже есть, обновляем его количество
+            const updatedQuantity = existingItem.rows[0].quantity + quantity;
+            await db.query(
+                'UPDATE cart SET quantity = $1 WHERE user_id = $2 AND product_id = $3',
+                [updatedQuantity, user_id, product_id]
+            );
+            return res.status(200).json({ message: 'Количество товара в корзине обновлено' });
+        }
+
+        // Добавляем новый товар в корзину, с проверкой на размер
+        await db.query(
+            'INSERT INTO cart (user_id, product_id, size, title, description, price, image_url, quantity) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+            [user_id, product_id, sizeToInsert, title, description, price, image_url, quantity]
+        );
+
+        res.status(201).json({ message: 'Товар успешно добавлен в корзину' });
+    } catch (err) {
+        console.error('Ошибка при добавлении товара в корзину:', err);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
+
+app.get('/api/cart', authenticateToken, async (req, res) => {
+    const user_id = req.user.id;
+
+    try {
+        const result = await db.query('SELECT * FROM cart WHERE user_id = $1', [user_id]);
+        res.json(result.rows);  // Отправляем товары из корзины
+    } catch (err) {
+        console.error('Ошибка при получении корзины:', err);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
+
+app.delete('/api/cart/:id', authenticateToken, async (req, res) => {
+    const { id } = req.params; // Это ID записи корзины
+    const user_id = req.user.id;
+
+    try {
+        // Ищем товар по ID записи корзины
+        const cartItem = await db.query('SELECT * FROM cart WHERE id = $1 AND user_id = $2', [id, user_id]);
+
+        if (cartItem.rows.length === 0) {
+            return res.status(404).json({ message: 'Товар не найден в корзине' });
+        }
+
+        // Удаляем товар из корзины по ID записи
+        await db.query('DELETE FROM cart WHERE id = $1', [id]);
+
+        res.json({ message: 'Товар удалён из корзины' });
+    } catch (err) {
+        console.error('Ошибка при удалении товара из корзины:', err);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
+
 // Настройка порта и запуск сервера
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

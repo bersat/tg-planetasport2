@@ -288,3 +288,25 @@ button.reset:hover {
     opacity: 0;
   }
 }
+
+.favorite-btn {
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+
+.favorite-btn:hover {
+  transform: scale(1.2);
+}
+
+.favorite-btn svg {
+  transition: color 0.2s ease-in-out;
+}
+
+.favorite-btn .fav-added {
+  color: red;
+}
+
+.favorite-btn .fav-removed {
+  color: white;
+}
+

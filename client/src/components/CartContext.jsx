@@ -1,83 +1,140 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
 
-// Контекст корзины
+// Создаем контекст для корзины
 const CartContext = createContext();
 
-// Провайдер корзины
-export function CartProvider({ children }) {
-  const [cart, setCart] = useState([]);
+// Хук для использования контекста
+export const useCart = () => {
+  return useContext(CartContext);
+};
 
-  // Загружаем корзину из localStorage при первом рендере
+// Провайдер контекста для корзины
+export const CartProvider = ({ children }) => {
+  const [cart, setCart] = useState(() => {
+    // При инициализации проверяем, есть ли товары в localStorage
+    const storedCart = localStorage.getItem('cart');
+    return storedCart ? JSON.parse(storedCart) : [];
+  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Проверка авторизации и загрузка корзины с сервера
   useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem('cart'));
-    if (storedCart) {
-      setCart(storedCart);
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      setIsAuthenticated(true);
+      fetchCartFromServer(token); // Загружаем корзину с сервера
+    } else {
+      setIsAuthenticated(false);
     }
   }, []);
 
-  // Сохраняем корзину в localStorage всякий раз, когда она меняется
-  useEffect(() => {
-    if (cart.length > 0) {
-      localStorage.setItem('cart', JSON.stringify(cart));
+  // Загружаем корзину с сервера для авторизованных пользователей
+  const fetchCartFromServer = async (token) => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/cart', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setCart(response.data);
+      localStorage.setItem('cart', JSON.stringify(response.data)); // Сохраняем в localStorage
+    } catch (err) {
+      console.error('Ошибка при загрузке корзины с сервера:', err);
     }
-  }, [cart]);
+  };
 
-  // Добавление товара в корзину с учетом размера
+  // Функция для добавления товара в корзину
   const addToCart = (product) => {
-    setCart(prevCart => {
-      // Проверяем, есть ли уже такой товар с таким размером в корзине
-      const existingItem = prevCart.find(item => item.id === product.id && item.size === product.size);
+    setCart((prevCart) => {
+      const updatedCart = [...prevCart, product];
 
-      if (existingItem) {
-        // Если товар с таким размером есть, увеличиваем его количество
-        return prevCart.map(item =>
-          item.id === product.id && item.size === product.size
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
+      // Если пользователь авторизован, обновляем данные на сервере
+      if (isAuthenticated) {
+        const token = localStorage.getItem('auth_token');
+        updateCartOnServer(updatedCart, token); // Отправляем обновленный список на сервер
       } else {
-        // Если товара нет, добавляем новый товар с выбранным размером
-        return [...prevCart, { ...product, quantity: 1 }];
+        // Если не авторизован, просто сохраняем в localStorage
+        localStorage.setItem('cart', JSON.stringify(updatedCart));
       }
+
+      return updatedCart;
     });
   };
 
-  // Удаление товара из корзины с учетом размера
-  const removeFromCart = (productId, size) => {
-    const updatedCart = cart.filter((item) => item.id !== productId || item.size !== size);
-    setCart(updatedCart);
+  // Функция для удаления товара из корзины
+ const removeFromCart = async (productId) => {
+  // Проверяем, авторизован ли пользователь
+  if (isAuthenticated) {
+    const token = localStorage.getItem('auth_token');
+    try {
+      // Отправляем запрос на сервер для удаления товара из корзины
+      await axios.delete(`http://localhost:5000/api/cart/${productId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    // Сохраняем обновленную корзину в localStorage
-    localStorage.setItem('cart', JSON.stringify(updatedCart));
-  };
+      // Если удаление прошло успешно, обновляем корзину на клиенте
+      setCart((prevCart) => {
+        return prevCart.filter((prod) => prod.product_id !== productId);
+      });
 
-  // Очистка корзины
-  const clearCart = () => {
-    setCart([]);
-    localStorage.removeItem('cart'); // Удаляем корзину из localStorage
-  };
+      console.log('Товар удалён из корзины');
+    } catch (error) {
+      console.error('Ошибка при удалении товара с сервера:', error);
+    }
+  } else {
+    // Если не авторизован, просто обновляем корзину в localStorage
+    setCart((prevCart) => {
+      const updatedCart = prevCart.filter((prod) => prod.product_id !== productId);
+      localStorage.setItem('cart', JSON.stringify(updatedCart));
+      return updatedCart;
+    });
+  }
+};
 
-  // Обновление количества товара в корзине с учетом размера
-  const updateQuantity = (productId, size, quantity) => {
-    setCart(prevCart => {
-      return prevCart.map((item) =>
-        item.id === productId && item.size === size
-          ? quantity > 0
-            ? { ...item, quantity } // Если количество больше 0, обновляем
-            : item // Если количество меньше или равно 0, ничего не меняем
-          : item
+
+  // Обновление корзины на сервере
+  const updateCartOnServer = async (updatedCart, token) => {
+    try {
+      const response = await axios.post(
+        'http://localhost:5000/api/cart',
+        updatedCart.map(product => ({
+          product_id: product.product_id,
+          title: product.title,
+          description: product.description || '',
+          price: product.price,
+          image_url: product.image_url || '',
+          quantity: product.quantity,
+        })),
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
       );
-    });
+      console.log('Корзина успешно обновлена:', response.data);
+    } catch (error) {
+      console.error('Ошибка при обновлении корзины на сервере:', error);
+    }
   };
+
+  // Эффект при смене аккаунта или авторизации
+  useEffect(() => {
+    if (isAuthenticated) {
+      const token = localStorage.getItem('auth_token');
+      fetchCartFromServer(token); // Загружаем корзину с сервера
+    } else {
+      localStorage.removeItem('cart'); // Очищаем localStorage, если не авторизован
+      setCart([]); // Очищаем состояние корзины
+    }
+  }, [isAuthenticated]);
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart, updateQuantity }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart }}>
       {children}
     </CartContext.Provider>
   );
-}
-
-// Хук для использования корзины
-export function useCart() {
-  return useContext(CartContext);
-}
+};
