@@ -647,11 +647,22 @@ app.get('/api/orders', async (req, res) => {
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
         const userId = decodedToken.id; // Получаем user_id из токена
 
-        // Запрашиваем заказы для конкретного пользователя
-        const ordersResult = await db.query(
-            'SELECT id, order_number, total_price, total_items, created_at FROM orders WHERE user_id = $1 ORDER BY created_at DESC',
-            [userId]
-        );
+        // Запрашиваем заказы для конкретного пользователя, включая статусы и комментарии
+        const ordersResult = await db.query(`
+            SELECT
+                o.id,
+                o.order_number,
+                o.total_price,
+                o.total_items,
+                o.created_at,
+                os.status_name,
+                o.status_id,
+                o.cancel_comment  -- Добавляем поле cancel_comment
+            FROM orders o
+            LEFT JOIN order_statuses os ON o.status_id = os.status_id
+            WHERE o.user_id = $1
+            ORDER BY o.created_at DESC
+        `, [userId]);
 
         if (ordersResult.rows.length === 0) {
             return res.status(404).json({ message: 'У вас нет заказов.' });
@@ -659,23 +670,28 @@ app.get('/api/orders', async (req, res) => {
 
         const orders = ordersResult.rows;
 
-        // Для каждого заказа получаем детали
+        // Для каждого заказа получаем детали товаров
         const orderDetailsPromises = orders.map(async (order) => {
             const orderItemsResult = await db.query(
                 'SELECT product_id, title, price, quantity, size FROM order_items WHERE order_id = $1',
                 [order.id]
             );
-            return { ...order, items: orderItemsResult.rows };
+            return {
+                ...order,
+                items: orderItemsResult.rows
+            };
         });
 
         const fullOrders = await Promise.all(orderDetailsPromises);
 
+        // Отправляем ответ с полными данными о заказах, включая статусы и комментарии
         res.status(200).json(fullOrders);
     } catch (error) {
         console.error('Ошибка при получении заказов:', error);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
+
 
 // Получение всех заказов с данными пользователя
 app.get('/api/admin/orders', authenticateToken, async (req, res) => {
@@ -685,13 +701,14 @@ app.get('/api/admin/orders', authenticateToken, async (req, res) => {
             return res.status(403).json({ message: 'Доступ запрещен' });
         }
 
-        // Получаем все заказы с данными пользователя и товарами
+        // Получаем все заказы с данными пользователя, товарами и статусами
         const ordersResult = await db.query(`
             SELECT o.id AS order_id, o.created_at, o.total_price, u.full_name, u.email,
-                   oi.title, oi.price, oi.quantity, oi.size
+                   oi.title, oi.price, oi.quantity, oi.size, o.status_id, os.status_name, o.cancel_comment
             FROM orders o
             JOIN users u ON o.user_id = u.id
             LEFT JOIN order_items oi ON o.id = oi.order_id
+            LEFT JOIN order_statuses os ON o.status_id = os.status_id
             ORDER BY o.created_at DESC
         `);
 
@@ -712,6 +729,9 @@ app.get('/api/admin/orders', authenticateToken, async (req, res) => {
                     total_price: order.total_price,
                     full_name: order.full_name,
                     email: order.email,
+                    status_id: order.status_id,
+                    status_name: order.status_name,
+                    cancel_comment: order.cancel_comment,
                     items: [{
                         product_name: order.title,
                         price: order.price,
@@ -723,12 +743,42 @@ app.get('/api/admin/orders', authenticateToken, async (req, res) => {
             return acc;
         }, []);
 
-        res.json(orders); // Возвращаем массив заказов с товарами
+        res.json(orders); // Возвращаем массив заказов с товарами и статусами
     } catch (err) {
         console.error('Ошибка при получении заказов:', err);
         res.status(500).json({ message: 'Ошибка сервера' });
     }
 });
+
+app.patch('/api/admin/orders/:order_id/status', authenticateToken, async (req, res) => {
+    const { order_id } = req.params;
+    const { status_id, cancel_comment } = req.body;  // Получаем статус и комментарий (если есть)
+
+    try {
+        // Проверка, существует ли заказ
+        const orderResult = await db.query('SELECT * FROM orders WHERE id = $1', [order_id]);
+        const order = orderResult.rows[0];
+
+        if (!order) {
+            return res.status(404).json({ message: 'Заказ не найден' });
+        }
+
+        // Если статус "Отменен", добавляем комментарий
+        if (status_id === 5 && cancel_comment) {  // 5 — это статус "Отменен"
+            await db.query('UPDATE orders SET status_id = $1, cancel_comment = $2 WHERE id = $3',
+                [status_id, cancel_comment, order_id]);
+        } else {
+            await db.query('UPDATE orders SET status_id = $1 WHERE id = $2', [status_id, order_id]);
+        }
+
+        res.status(200).json({ message: 'Статус заказа обновлен' });
+    } catch (err) {
+        console.error('Ошибка при обновлении статуса заказа:', err);
+        res.status(500).json({ message: 'Ошибка сервера' });
+    }
+});
+
+
 
 // Добавление товара в избранное
 app.post('/api/favorites', authenticateToken, async (req, res) => {

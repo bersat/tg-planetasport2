@@ -10,40 +10,92 @@ function AdminOrdersPage() {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchOrders = async () => {
+    // Получаем заказы и статус
+    useEffect(() => {
+        const fetchOrders = async () => {
+            try {
+                const token = localStorage.getItem('auth_token');
+                console.log("Отправляем запрос с токеном:", token); // Логируем токен перед запросом
+
+                const response = await axios.get(`${API_BASE}/admin/orders`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                console.log("Ответ от сервера:", response.data); // Логируем ответ от сервера
+
+                if (response.data && response.data.length > 0) {
+                    // Обновляем заказы, добавляем поле status_name
+                    setOrders(response.data.map(order => ({
+                        ...order,
+                        status_name: getStatusName(order.status_id), // Определяем название статуса по его id
+                    })));
+                } else {
+                    setOrders([]); // Если нет заказов, устанавливаем пустой массив
+                }
+            } catch (error) {
+                console.error('Ошибка при загрузке заказов:', error);
+                if (error.response && error.response.status === 403) {
+                    alert('Доступ запрещен');
+                    navigate('/login');
+                }
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchOrders();
+    }, [navigate]);
+
+    // Функция для получения текста статуса по его id
+    const getStatusName = (statusId) => {
+        switch (statusId) {
+            case 1:
+                return 'Новый';
+            case 2:
+                return 'В процессе';
+            case 3:
+                return 'Отправлен';
+            case 4:
+                return 'Доставлен';
+            case 5:
+                return 'Отменен';
+            default:
+                return 'Неизвестен';
+        }
+    };
+
+    // Функция для изменения статуса заказа
+    const handleStatusChange = async (orderId, statusId) => {
+        let cancelComment = '';
+
+        // Если выбран статус "Отменен", запрашиваем комментарий
+        if (statusId === 5) { // Статус "Отменен" имеет id 5
+            cancelComment = prompt('Введите причину отмены:');
+        }
+
         try {
             const token = localStorage.getItem('auth_token');
-            console.log("Отправляем запрос с токеном:", token); // Логируем токен перед запросом
+            const payload = cancelComment
+                ? { status_id: statusId, cancel_comment: cancelComment }
+                : { status_id: statusId };
 
-            const response = await axios.get(`${API_BASE}/admin/orders`, {
+            // Отправляем запрос на сервер для изменения статуса
+            await axios.patch(`${API_BASE}/admin/orders/${orderId}/status`, payload, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
 
-            console.log("Ответ от сервера:", response.data); // Логируем ответ от сервера
-
-            if (response.data && response.data.length > 0) {
-                setOrders(response.data); // Устанавливаем данные заказов
-            } else {
-                setOrders([]); // Если нет заказов, устанавливаем пустой массив
-            }
+            // Обновляем статус в интерфейсе
+            setOrders(prevOrders => prevOrders.map(order =>
+                order.order_id === orderId ? { ...order, status_id: statusId, status_name: getStatusName(statusId), cancel_comment: cancelComment } : order
+            ));
         } catch (error) {
-            console.error('Ошибка при загрузке заказов:', error);
-            if (error.response && error.response.status === 403) {
-                alert('Доступ запрещен');
-                navigate('/login');
-            }
-        } finally {
-            setLoading(false);
+            console.error('Ошибка при обновлении статуса:', error);
         }
     };
-
-    fetchOrders();
-}, [navigate]);
-
-
 
     if (loading) {
         return <p>Загрузка...</p>;
@@ -64,6 +116,12 @@ function AdminOrdersPage() {
                                 <p>Имя клиента: {order.full_name}</p>
                                 <p>Email: {order.email}</p>
                                 <span>Сумма: {order.total_price} ₽</span>
+                                <p><strong>Статус:</strong> {order.status_name}</p>
+                                {order.status_id === 5 && order.cancel_comment && (
+                                    <div className="cancel-comment">
+                                        <p><strong>Причина отмены:</strong> {order.cancel_comment}</p>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="order-items">
@@ -93,9 +151,44 @@ function AdminOrdersPage() {
                                 >
                                     Просмотр
                                 </button>
-                                <button className="status">
-                                    Изменить статус
+
+                                {/* Статус может быть изменен с помощью кнопок */}
+                                <button
+                                    className="status"
+                                    onClick={() => handleStatusChange(order.order_id, 1)} // Новый
+                                >
+                                    Новый
                                 </button>
+
+                                <button
+                                    className="status"
+                                    onClick={() => handleStatusChange(order.order_id, 2)} // В процессе
+                                >
+                                    В процессе
+                                </button>
+
+                                <button
+                                    className="status"
+                                    onClick={() => handleStatusChange(order.order_id, 3)} // Отправлен
+                                >
+                                    Отправлен
+                                </button>
+
+                                <button
+                                    className="status"
+                                    onClick={() => handleStatusChange(order.order_id, 4)} // Доставлен
+                                >
+                                    Доставлен
+                                </button>
+
+                                <button
+                                    className="status"
+                                    onClick={() => handleStatusChange(order.order_id, 5)} // Отменен
+                                >
+                                    Отменен
+                                </button>
+
+                                {/* Дополнительные действия */}
                                 <button className="delete-order">
                                     Удалить
                                 </button>

@@ -201,6 +201,13 @@ const Profile = () => {
               <h4>Заказ №{order.order_number}</h4>
               <p>Дата заказа: {new Date(order.created_at).toLocaleDateString()}</p>
               <p>Общая сумма: {order.total_price} ₽</p>
+              <p><strong>Статус:</strong> {order.status_name || 'Не указан'}</p>  {/* Отображаем статус заказа */}
+
+              {/* Показать комментарий только если статус "Отменён" */}
+              {order.status_id === 5 && order.cancel_comment && (
+                <p><strong>Комментарий:</strong> {order.cancel_comment ? order.cancel_comment: "Не указан"}</p>
+              )}
+
               <p>Товары:</p>
               <ul>
                 {order.items.map((item) => (

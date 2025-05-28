@@ -34,12 +34,14 @@ function Catalog() {
   const [products, setProducts] = useState([]);
   const [modalProductId, setModalProductId] = useState(null);
   const { favorites, addToFavorites, removeFromFavorites } = useFavorites();
-  const [isPulsing, setIsPulsing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Фильтры
   const [brands, setBrands] = useState([]);
   const [features, setFeatures] = useState([]);
   const [sizes, setSizes] = useState([]);
+  const [isAnimating, setIsAnimating] = useState({});
+
 
   // Выбранные фильтры (кроме category, gender, type, которые берутся из URL)
   const [selectedBrands, setSelectedBrands] = useState([]);
@@ -204,16 +206,26 @@ function Catalog() {
     navigate('/catalog');
   };
 
-  const isFavorite = (productId) => favorites.some(prod => prod.id === productId);
+  const isFavorite = (productId) => favorites.some(fav => fav.id === productId);
 
   const toggleFavorite = async (product) => {
   // Проверяем, авторизован ли пользователь через localStorage
     const isAuthenticated = Boolean(localStorage.getItem('auth_token'));
 
-      setIsPulsing(true);
+    setIsLoading(true);
 
-  // Отключаем пульсацию через 1 секунду (пульсация длится 1 секунду)
-  setTimeout(() => setIsPulsing(false), 1000);
+         setIsAnimating((prev) => ({
+    ...prev,
+    [product.id]: true,
+  }));
+
+      setTimeout(() => {
+        setIsLoading(false);  // Отключаем анимацию
+           setIsAnimating((prev) => ({
+    ...prev,
+    [product.id]: false, // Сбрасываем анимацию для текущего товара
+  }));
+    }, 1000);
 
   try {
     if (isFavorite(product.id)) {
@@ -221,7 +233,7 @@ function Catalog() {
 
       if (isAuthenticated) {
         const token = localStorage.getItem('auth_token');
-        await axios.delete('http://localhost:5000/api/favorites', { productId: product.id }, {
+        await axios.delete(`http://localhost:5000/api/favorites`, { productId: product.id }, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
@@ -242,6 +254,8 @@ function Catalog() {
 
       }
     }
+
+
   } catch (err) {
     console.error('Ошибка при обновлении избранного:', err);
   }
@@ -472,14 +486,19 @@ const getColorStyle = (color) => {
               Подробнее
             </button>
            <div
-  className={`favorite-btn ${isPulsing ? 'pulsing' : ''}`}
+  className={`favorite-btn ${isAnimating[prod.id] ? 'animate' : ''}`}
   onClick={() => toggleFavorite(prod)}
 >
-  {isFavorite(prod.id) ? (
-    <FaHeart color="red" size={24} />
-  ) : (
-    <FaRegHeart color="white" size={24} />
-  )}
+              {isAnimating[prod.id] ? (
+                <div className="loading">
+                  <svg width="16px" height="12px">
+                    <polyline id="back" points="1 6 4 6 6 11 10 1 12 6 15 6"></polyline>
+                    <polyline id="front" points="1 6 4 6 6 11 10 1 12 6 15 6"></polyline>
+                  </svg>
+                </div>
+              ) : (
+                <FaRegHeart color="white" size={24} />
+              )}
 </div>
 
           </div>

@@ -51,7 +51,13 @@ function Cart() {
           acc[item.product_id] = stockQuantities[index];
           return acc;
         }, {});
+
         setStockData(stockObj);
+
+        // Теперь пересчитываем итоговую сумму
+        const initialTotal = response.data.reduce((total, item) => total + (item.price * item.quantity), 0);
+        setTotalPrice(initialTotal);
+
       } catch (error) {
         console.error('Ошибка при получении данных о корзине:', error);
       }
@@ -76,7 +82,7 @@ function Cart() {
       );
     });
 
-    // Пересчитываем общую стоимость
+    // Пересчитываем общую стоимость после изменения количества
     const updatedTotal = cart.reduce((total, item) =>
       total + (item.product_id === productId ? item.price * newQuantity : item.price * item.quantity), 0
     );
@@ -84,39 +90,40 @@ function Cart() {
   };
 
   // Функция для удаления товара из корзины
-  const removeFromCart = async (cartItemId) => {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-      console.error('Токен не найден');
-      return;
-    }
+ // Функция для удаления товара из корзины
+const removeFromCart = async (cartItemId) => {
+  const token = localStorage.getItem('auth_token');
+  if (!token) {
+    console.error('Токен не найден');
+    return;
+  }
 
-    try {
-      const response = await axios.delete(`${API_BASE}/cart/${cartItemId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+  try {
+    const response = await axios.delete(`${API_BASE}/cart/${cartItemId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-      console.log('Ответ от сервера:', response.data);
+    console.log('Ответ от сервера:', response.data);
 
-      setCart(prevCart => prevCart.filter(item => item.id !== cartItemId));
-      window.location.reload(); // Перезагрузка страницы
-    } catch (error) {
-      console.error('Ошибка при удалении товара из корзины:', error);
-    }
-  };
+    // Обновляем корзину, удаляя товар с id cartItemId
+    const updatedCart = cart.filter(item => item.id !== cartItemId);
 
-  // Функция для очистки корзины
-  const clearCart = async () => {
-    try {
-      await axios.delete(`${API_BASE}/cart`);
-      setCart([]);
-      setTotalPrice(0);
-    } catch (error) {
-      console.error('Ошибка при очистке корзины:', error);
-    }
-  };
+    // Пересчитываем итоговую сумму
+    const updatedTotal = updatedCart.reduce((total, item) => total + (item.price * item.quantity), 0);
+
+    // Обновляем состояние корзины и итоговой суммы
+    setCart(updatedCart);
+    setTotalPrice(updatedTotal); // Обновляем итоговую сумму
+
+    // Перезагрузка страницы
+    window.location.reload(); // Перезагружаем страницу
+  } catch (error) {
+    console.error('Ошибка при удалении товара из корзины:', error);
+  }
+};
+
 
   // Функция для перехода к оформлению заказа
   const handleGoToCheckout = () => {
@@ -177,7 +184,6 @@ function Cart() {
             </ul>
             <div className="total">
               <span>Итого: {totalPrice} ₽</span>
-              <button onClick={clearCart}>Очистить корзину</button>
               <button onClick={handleGoToCheckout}>Перейти к покупкам</button>
             </div>
           </div>

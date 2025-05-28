@@ -43,6 +43,7 @@
 
 .favorite-item:hover {
   transform: scale(1.05); /* Увеличение карточки при наведении */
+  border-radius: 20px;
 }
 
 .favorite-item img {
