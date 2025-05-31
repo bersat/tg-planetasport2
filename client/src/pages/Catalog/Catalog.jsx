@@ -243,7 +243,7 @@ function Catalog() {
 
       if (isAuthenticated) {
         const token = localStorage.getItem('auth_token');
-        await axios.delete(`http://localhost:5000/api/favorites`, { productId: product.id }, {
+        await axios.delete(`${API_URL}/api/favorites`, { productId: product.id }, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
@@ -252,7 +252,7 @@ function Catalog() {
 
       if (isAuthenticated) {
         const token = localStorage.getItem('auth_token');
-       await axios.post('http://localhost:5000/api/favorites', {
+       await axios.post(`${API_URL}/api/favorites`, {
   product_id: product.id,
   title: product.title,
   description: product.description,
