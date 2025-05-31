@@ -63,16 +63,16 @@ function Catalog() {
 
   // Загрузка справочных данных при монтировании
   useEffect(() => {
-    axios.get(`${API_URL}/categories`).then(res => setCategories(res.data)).catch(console.error);
-    axios.get(`${API_URL}/brands`).then(res => setBrands(res.data)).catch(console.error);
-    axios.get(`${API_URL}/features`).then(res => setFeatures(res.data)).catch(console.error);
-    axios.get(`${API_URL}/sizes`).then(res => setSizes(res.data)).catch(console.error);
+    axios.get(`${API_URL}/api/categories`).then(res => setCategories(res.data)).catch(console.error);
+    axios.get(`${API_URL}/api/brands`).then(res => setBrands(res.data)).catch(console.error);
+    axios.get(`${API_URL}/api/features`).then(res => setFeatures(res.data)).catch(console.error);
+    axios.get(`${API_URL}/api/sizes`).then(res => setSizes(res.data)).catch(console.error);
   }, []);
 
   // Загрузка полов при выборе категории (selectedCategory берется из URL)
   useEffect(() => {
     if (selectedCategory) {
-      axios.get(`${API_URL}/genders`).then(res => setGenders(res.data)).catch(console.error);
+      axios.get(`${API_URL}/api/genders`).then(res => setGenders(res.data)).catch(console.error);
     } else {
       setGenders([]);
     }
@@ -91,7 +91,7 @@ function Catalog() {
   // Загрузка типов при выборе категории и пола (selectedCategory, selectedGender из URL)
   useEffect(() => {
     if (selectedCategory && selectedGender) {
-      axios.get(`${API_URL}/types`, { params: { category: selectedCategory } })
+      axios.get(`${API_URL}/api/types`, { params: { category: selectedCategory } })
         .then(res => setTypes(res.data))
         .catch(console.error);
     } else {
@@ -124,7 +124,7 @@ function Catalog() {
         if (selectedPrice.min) params.priceMin = selectedPrice.min;
         if (selectedPrice.max) params.priceMax = selectedPrice.max;
 
-        const res = await axios.get(`${API_URL}/products`, { params });
+        const res = await axios.get(`${API_URL}/api/products`, { params });
         const fetchedProducts = res.data;
         // Загружаем изображения для каждого товара
        const productsWithImages = fetchedProducts.map(product => ({

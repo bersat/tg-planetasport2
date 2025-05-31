@@ -43,7 +43,7 @@ function ProductModal({ productId, onClose }) {
       console.error('Ошибка декодирования токена:', err);
     }
 
-    axios.get(`${API_URL}/profile`, {
+    axios.get(`${API_URL}/api/profile`, {
       headers: { Authorization: `Bearer ${token}` },
     }).then(res => setUser(res.data))
       .catch(console.error);
@@ -52,14 +52,14 @@ function ProductModal({ productId, onClose }) {
 
   // ====== Загрузка данных ======
   useEffect(() => {
-    axios.get(`${API_URL}/products/${productId}`)
+    axios.get(`${API_URL}/api/products/${productId}`)
       .then(res => {
         setProduct(res.data);
         setStock(res.data.quantity);
       }).catch(console.error);
 
     if (token) {
-      axios.get(`${API_URL}/profile`, {
+      axios.get(`${API_URL}/api/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       }).then(res => setUser(res.data))
         .catch(console.error);
@@ -71,7 +71,7 @@ function ProductModal({ productId, onClose }) {
   // ====== Получение отзывов с фильтрами ======
   const fetchReviews = () => {
     const params = new URLSearchParams(filters).toString();
-    axios.get(`${API_URL}/products/${productId}/reviews?${params}`)
+    axios.get(`${API_URL}/api/products/${productId}/reviews?${params}`)
       .then(res => setReviews(res.data))
       .catch(console.error);
   };
@@ -85,7 +85,7 @@ function ProductModal({ productId, onClose }) {
 
   const userId = user.id;  // Получаем id из объекта user
 
-    axios.post(`${API_URL}/products/${productId}/reviews`, {
+    axios.post(`${API_URL}/api/products/${productId}/reviews`, {
       rating,
       comment,
       user_id: userId,
@@ -104,7 +104,7 @@ function ProductModal({ productId, onClose }) {
   if (!window.confirm("Удалить этот отзыв?")) return;
 
   try {
-    await axios.delete(`${API_URL}/reviews/${id}`, {
+    await axios.delete(`${API_URL}/api/reviews/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     fetchReviews();
@@ -133,7 +133,7 @@ function ProductModal({ productId, onClose }) {
     };
 
     try {
-      await axios.post(`${API_URL}/cart`, productData, {
+      await axios.post(`${API_URL}/api/cart`, productData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       addToCart(productData);

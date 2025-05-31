@@ -10,7 +10,7 @@ function RecommendedProducts() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get(`${API_URL}/products`)
+    axios.get(`${API_URL}/api/products`)
       .then(res => {
         const shuffled = res.data.sort(() => 0.5 - Math.random());
         setProducts(shuffled.slice(0, 10)); // максимум 10

@@ -6,7 +6,7 @@ const API_URL = process.env.REACT_APP_API_URL;
 // Получение всех категорий
 export const getCategories = async () => {
     try {
-        const response = await axios.get(`${API_URL}/categories`);  // Используем axios
+        const response = await axios.get(`${API_URL}/api/categories`);  // Используем axios
         return response.data;
     } catch (error) {
         console.error('There was a problem with the fetch operation:', error);
@@ -17,7 +17,7 @@ export const getCategories = async () => {
 // Получение подкатегорий
 export const getSubcategories = async (categoryId) => {
     try {
-        const response = await axios.get(`${API_URL}/subcategories?parentId=${categoryId}`);
+        const response = await axios.get(`${API_URL}/api/subcategories?parentId=${categoryId}`);
         return response.data;
     } catch (error) {
         console.error('Ошибка при получении подкатегорий:', error);
@@ -29,7 +29,7 @@ export const getSubcategories = async (categoryId) => {
 export const getProducts = async (categoryId, genderCategoryId, subcategoryId) => {
     try {
         // Запрос с параметрами
-        const response = await axios.get(`${API_URL}/products`, {
+        const response = await axios.get(`${API_URL}/api/products`, {
             params: {
                 categoryId: categoryId,
                 genderCategoryId: genderCategoryId,
@@ -49,7 +49,7 @@ export const getProducts = async (categoryId, genderCategoryId, subcategoryId) =
 // Получение подробной информации о товаре
 export const getProductDetails = async (productId) => {
     try {
-        const response = await axios.get(`${API_URL}/products/${productId}`);
+        const response = await axios.get(`${API_URL}/api/products/${productId}`);
         return response.data;
     } catch (error) {
         console.error('Ошибка при получении подробной информации о товаре:', error);

@@ -17,7 +17,7 @@ function AdminOrdersPage() {
                 const token = localStorage.getItem('auth_token');
                 console.log("Отправляем запрос с токеном:", token); // Логируем токен перед запросом
 
-                const response = await axios.get(`${API_URL}/admin/orders`, {
+                const response = await axios.get(`${API_URL}/api/admin/orders`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -71,7 +71,7 @@ function AdminOrdersPage() {
 
     try {
         const token = localStorage.getItem('auth_token');
-        await axios.delete(`${API_URL}/admin/orders/${orderId}`, {
+        await axios.delete(`${API_URL}/api/admin/orders/${orderId}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -103,7 +103,7 @@ function AdminOrdersPage() {
                 : { status_id: statusId };
 
             // Отправляем запрос на сервер для изменения статуса
-            await axios.patch(`${API_URL}/admin/orders/${orderId}/status`, payload, {
+            await axios.patch(`${API_URL}/api/admin/orders/${orderId}/status`, payload, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
