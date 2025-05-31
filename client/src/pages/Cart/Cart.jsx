@@ -6,7 +6,7 @@ import RecommendedProducts from '../../components/RecommendProducts/RecommendPro
 import OrderModal from '../../components/OrderModal/OrderModal';
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL;
 
 function Cart() {
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ function Cart() {
   // Функция для получения данных о наличии товара с сервера
   const fetchStockData = async (productId) => {
     try {
-      const res = await axios.get(`${API_BASE}/products/${productId}`);
+      const res = await axios.get(`${API_URL}/products/${productId}`);
       return res.data.quantity; // Предполагаем, что API возвращает количество товара в поле 'quantity'
     } catch (error) {
       console.error('Ошибка при получении данных о наличии товара:', error);
@@ -32,7 +32,7 @@ function Cart() {
 
     const getCartData = async () => {
       try {
-        const response = await axios.get(`${API_BASE}/cart`, {
+        const response = await axios.get(`${API_URL}/cart`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -99,7 +99,7 @@ const removeFromCart = async (cartItemId) => {
   }
 
   try {
-    const response = await axios.delete(`${API_BASE}/cart/${cartItemId}`, {
+    const response = await axios.delete(`${API_URL}/cart/${cartItemId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

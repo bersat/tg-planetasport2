@@ -9,6 +9,8 @@ const emailRegex = /^[a-zA-Z0-9._%+-]+@(mail.ru|yandex.ru|gmail.com)$/; // Пр�
 const phoneRegex = /^\+7\d{10}$/; // Проверка на телефон +7 и 10 цифр
 const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{6,}$/; // Пароль (не менее 6 символов, заглавная, спец. символ)
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 const Register = () => {
   const [form, setForm] = useState({
     full_name: '',
@@ -81,7 +83,7 @@ const Register = () => {
     if (!validateForm()) return;
 
     try {
-      const res = await axios.post('http://localhost:5000/api/register', form);
+      const res = await axios.post(`${API_URL}/api/register`, form);
 
       if (res.status === 201) {
         setStatus('Регистрация прошла успешно. Перенаправляем...');

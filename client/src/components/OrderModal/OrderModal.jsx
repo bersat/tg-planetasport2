@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './OrderModal.css';
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 function OrderModal({ cart, onClose }) {
   const [formData, setFormData] = useState({
     name: '',
@@ -87,7 +89,7 @@ function OrderModal({ cart, onClose }) {
 
     try {
       // Отправка данных на сервер
-      const response = await axios.post('http://localhost:5000/api/orders', orderData);
+      const response = await axios.post(`${API_URL}/api/orders`, orderData);
       alert(`Ваш заказ №${response.data.orderNumber} оформлен!`);
       onClose(); // Закрытие модального окна после успешного оформления
     } catch (error) {

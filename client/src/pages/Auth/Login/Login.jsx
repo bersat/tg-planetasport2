@@ -3,6 +3,8 @@ import '../auth.css';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [status, setStatus] = useState('');
@@ -16,7 +18,7 @@ const Login = () => {
   e.preventDefault();
 
   try {
-    const res = await axios.post('http://localhost:5000/api/login', form);
+    const res = await axios.post(`${API_URL}/api/login`, form);
 
 
     if (res.data.token) {

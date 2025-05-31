@@ -4,6 +4,8 @@ import Sidebar from '../Sidebar/Sidebar';
 import { FaSearch, FaBars, FaTimes } from 'react-icons/fa';
 import './Header.css';
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 function Header() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
@@ -29,7 +31,7 @@ function Header() {
 
     if (query.length >= 2) {
       try {
-        const response = await fetch(`http://localhost:5000/api/products/search?q=${encodeURIComponent(query)}`);
+        const response = await fetch(`${API_URL}/api/products/search?q=${encodeURIComponent(query)}`);
         const results = await response.json();
         setSearchResults(results);
         setShowSuggestions(true);

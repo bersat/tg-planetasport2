@@ -5,6 +5,8 @@ import Slider from 'react-slick';
 import './Favorites.css';
 import axios from 'axios';
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 function Favorites() {
   const [favorites, setFavorites] = useState([]);  // Инициализация как пустой массив
   const [sliderEnabled, setSliderEnabled] = useState(false);
@@ -18,7 +20,7 @@ function Favorites() {
 
     if (isAuthenticated) {
       try {
-        const response = await axios.get(`http://localhost:5000/api/favorites`, {
+        const response = await axios.get(`${API_URL}/api/favorites`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log('Избранные товары:', response.data);
@@ -94,7 +96,7 @@ function Favorites() {
       return;
     }
     try {
-      await axios.delete(`http://localhost:5000/api/favorites/${productId}`, {
+      await axios.delete(`${API_URL}/api/favorites/${productId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

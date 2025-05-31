@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState('');
   const [code, setCode] = useState('');
@@ -23,7 +25,7 @@ const ResetPassword = () => {
     e.preventDefault();
 
     try {
-      const res = await axios.post('http://localhost:5000/api/reset-password', {
+      const res = await axios.post(`${API_URL}/api/reset-password`, {
         code: resetCode,  // код восстановления
         newPassword,
       });

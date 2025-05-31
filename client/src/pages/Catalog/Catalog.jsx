@@ -8,7 +8,7 @@ import ProductModal from '../ProductModal/ProductModal';
 import { useFavorites } from '../../components/FavoritesContext'; // Импортируем хук для работы с избранными
 import { FaHeart, FaRegHeart } from 'react-icons/fa'; // Для иконок сердечка
 
-const API_BASE = 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL;
 
 const colorTranslation = {
   black: 'чёрный',
@@ -63,16 +63,16 @@ function Catalog() {
 
   // Загрузка справочных данных при монтировании
   useEffect(() => {
-    axios.get(`${API_BASE}/categories`).then(res => setCategories(res.data)).catch(console.error);
-    axios.get(`${API_BASE}/brands`).then(res => setBrands(res.data)).catch(console.error);
-    axios.get(`${API_BASE}/features`).then(res => setFeatures(res.data)).catch(console.error);
-    axios.get(`${API_BASE}/sizes`).then(res => setSizes(res.data)).catch(console.error);
+    axios.get(`${API_URL}/categories`).then(res => setCategories(res.data)).catch(console.error);
+    axios.get(`${API_URL}/brands`).then(res => setBrands(res.data)).catch(console.error);
+    axios.get(`${API_URL}/features`).then(res => setFeatures(res.data)).catch(console.error);
+    axios.get(`${API_URL}/sizes`).then(res => setSizes(res.data)).catch(console.error);
   }, []);
 
   // Загрузка полов при выборе категории (selectedCategory берется из URL)
   useEffect(() => {
     if (selectedCategory) {
-      axios.get(`${API_BASE}/genders`).then(res => setGenders(res.data)).catch(console.error);
+      axios.get(`${API_URL}/genders`).then(res => setGenders(res.data)).catch(console.error);
     } else {
       setGenders([]);
     }
@@ -91,7 +91,7 @@ function Catalog() {
   // Загрузка типов при выборе категории и пола (selectedCategory, selectedGender из URL)
   useEffect(() => {
     if (selectedCategory && selectedGender) {
-      axios.get(`${API_BASE}/types`, { params: { category: selectedCategory } })
+      axios.get(`${API_URL}/types`, { params: { category: selectedCategory } })
         .then(res => setTypes(res.data))
         .catch(console.error);
     } else {
@@ -124,7 +124,7 @@ function Catalog() {
         if (selectedPrice.min) params.priceMin = selectedPrice.min;
         if (selectedPrice.max) params.priceMax = selectedPrice.max;
 
-        const res = await axios.get(`${API_BASE}/products`, { params });
+        const res = await axios.get(`${API_URL}/products`, { params });
         const fetchedProducts = res.data;
         // Загружаем изображения для каждого товара
        const productsWithImages = fetchedProducts.map(product => ({

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import './Profile.css';
 import axios from 'axios';
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [orders, setOrders] = useState([]);  // Новое состояние для заказов
@@ -22,7 +24,7 @@ const Profile = () => {
         const token = localStorage.getItem('auth_token');
 
         // Запрос профиля пользователя
-        const res = await axios.get('http://localhost:5000/api/profile', {
+        const res = await axios.get(`${API_URL}/api/profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -37,7 +39,7 @@ const Profile = () => {
 
         // Запрос заказов пользователя
         try {
-          const ordersRes = await axios.get('http://localhost:5000/api/orders', {
+          const ordersRes = await axios.get(`${API_URL}/api/orders`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -76,7 +78,7 @@ const Profile = () => {
     const token = localStorage.getItem('auth_token');
     try {
       const res = await axios.put(
-        'http://localhost:5000/api/profile',
+        `${API_URL}/api/profile`,
         { full_name, email, phone },
         {
           headers: {

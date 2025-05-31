@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 // Создаем контекст для корзины
 const CartContext = createContext();
 
@@ -32,7 +34,7 @@ export const CartProvider = ({ children }) => {
   // Загружаем корзину с сервера для авторизованных пользователей
   const fetchCartFromServer = async (token) => {
     try {
-      const response = await axios.get('http://localhost:5000/api/cart', {
+      const response = await axios.get(`${API_URL}/api/cart`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -69,7 +71,7 @@ export const CartProvider = ({ children }) => {
     const token = localStorage.getItem('auth_token');
     try {
       // Отправляем запрос на сервер для удаления товара из корзины
-      await axios.delete(`http://localhost:5000/api/cart/${productId}`, {
+      await axios.delete(`${API_URL}/api/cart/${productId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -99,7 +101,7 @@ export const CartProvider = ({ children }) => {
   const updateCartOnServer = async (updatedCart, token) => {
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/cart',
+        `${API_URL}/api/cart`,
         updatedCart.map(product => ({
           product_id: product.product_id,
           title: product.title,

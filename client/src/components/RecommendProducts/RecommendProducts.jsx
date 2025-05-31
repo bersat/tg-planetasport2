@@ -3,14 +3,14 @@ import axios from 'axios';
 import './RecommendProducts.css';
 import { useNavigate } from 'react-router-dom';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL;
 
 function RecommendedProducts() {
   const [products, setProducts] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get(`${API_BASE}/products`)
+    axios.get(`${API_URL}/products`)
       .then(res => {
         const shuffled = res.data.sort(() => 0.5 - Math.random());
         setProducts(shuffled.slice(0, 10)); // максимум 10

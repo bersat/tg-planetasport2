@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 // Создаем контекст для избранных товаров
 const FavoritesContext = createContext();
 
@@ -32,7 +34,7 @@ export const FavoritesProvider = ({ children }) => {
   // Загружаем избранные товары с сервера для авторизованных пользователей
   const fetchFavoritesFromServer = async (token) => {
     try {
-      const response = await axios.get('http://localhost:5000/api/favorites', {
+      const response = await axios.get(`${API_URL}/api/favorites`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -85,7 +87,7 @@ export const FavoritesProvider = ({ children }) => {
     try {
       // Отправляем весь обновленный список на сервер
       const response = await axios.post(
-        'http://localhost:5000/api/favorites',
+        `${API_URL}/api/favorites`,
         updatedFavorites.map(product => ({
           product_id: product.id,
           title: product.title,
