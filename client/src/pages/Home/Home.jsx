@@ -14,11 +14,10 @@ const banners = [
 
 
 const categories = [
-  { name: 'Мужская одежда', category: 'Одежда', gender: 'Мужская' },
-  { name: 'Мужская обувь', category: 'Обувь', gender: 'Мужская' },
-  { name: 'Женская одежда', category: 'Одежда', gender: 'Женская' },
-  { name: 'Женская обувь', category: 'Обувь', gender: 'Женская' },
-  { name: 'Аксессуары унисекс', category: 'Аксессуары', gender: 'Унисекс' },
+  { name: 'Мужская одежда', category: 'Одежда', gender: 'Мужская', image:'/img/mens-jacket.png' },
+  { name: 'Мужская обувь', category: 'Обувь', gender: 'Мужская', image:'/img/menfoot.png' },
+  { name: 'Женская одежда', category: 'Одежда', gender: 'Женская', image:'/img/Jacket-For-Women.png' },
+  { name: 'Женская обувь', category: 'Обувь', gender: 'Женская', image:'/img/womenfoot.png' },
 ];
 
 function Home() {
@@ -58,16 +57,19 @@ function Home() {
       {/* Категории */}
       <div className="categories">
         <h2>Категории</h2>
-        <div className="category-buttons">
-          {categories.map((cat, idx) => (
-            <button
-              key={idx}
-              onClick={() => navigate(`/catalog?category=${cat.category}&gender=${cat.gender}`)}
-            >
-              {cat.name}
-            </button>
-          ))}
-              </div>
+       <div className="category-buttons">
+  {categories.map((cat, idx) => (
+    <div
+      key={idx}
+      className="category-card"
+      onClick={() => navigate(`/catalog?category=${cat.category}&gender=${cat.gender}`)}
+    >
+      <img src={cat.image} alt={cat.name} className="category-image" />
+      <span className="category-name">{cat.name}</span>
+    </div>
+  ))}
+</div>
+
               <div style={{ borderTop: "1px solid #4d4b4b",borderBottom:"1px solid #4d4b4b", marginTop: '50px' }} >
                     <div style={{marginTop:"50px", marginBottom:"50px"}} className="banner">
                   <img src="/img/sale4.png" alt="sale4" />

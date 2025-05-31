@@ -8,7 +8,7 @@ const db = require('./db'); // PostgreSQL pool
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
-
+const token = process.env.HTTPAPI;
 
 const transporter = nodemailer.createTransport({
     service: 'gmail', // или любой другой почтовый сервис
@@ -469,23 +469,58 @@ app.post('/api/products/:id/reviews', async (req, res) => {
 });
 
 
-// Получить отзывы по товару
+// Получить отзывы по товару с фильтрацией
 app.get('/api/products/:id/reviews', async (req, res) => {
     try {
         const { id } = req.params;
-        const result = await db.query(
-            `SELECT reviews.*, users.full_name FROM reviews
+        const { minRating = 0, maxRating = 5, startDate, endDate } = req.query;
+
+        let query = `
+            SELECT reviews.*, users.full_name FROM reviews
             JOIN users ON reviews.user_id = users.id
             WHERE reviews.product_id = $1
-            ORDER BY reviews.created_at DESC`,
-            [id]
-        );
+              AND reviews.rating BETWEEN $2 AND $3
+        `;
+        const params = [id, minRating, maxRating];
+        let paramIndex = 4;
+
+        if (startDate) {
+            query += ` AND reviews.created_at >= $${paramIndex++}`;
+            params.push(startDate);
+        }
+        if (endDate) {
+            query += ` AND reviews.created_at <= $${paramIndex++}`;
+            params.push(endDate);
+        }
+
+        query += ` ORDER BY reviews.created_at DESC`;
+
+        const result = await db.query(query, params);
         res.json(result.rows);
     } catch (err) {
         console.error('Ошибка при получении отзывов:', err);
         res.status(500).json({ error: 'Ошибка сервера при получении отзывов' });
     }
 });
+
+
+app.delete('/api/reviews/:id', authenticateToken, async (req, res) => {
+    try {
+        const reviewId = req.params.id;
+        const userRole = req.user.role; // берём напрямую из JWT
+
+        if (userRole !== 'admin') {
+            return res.status(403).json({ error: 'Доступ запрещён: только администраторы могут удалять отзывы' });
+        }
+
+        await db.query('DELETE FROM reviews WHERE id = $1', [reviewId]);
+        res.json({ message: 'Отзыв удалён' });
+    } catch (err) {
+        console.error('Ошибка при удалении отзыва:', err);
+        res.status(500).json({ error: 'Ошибка сервера при удалении отзыва' });
+    }
+});
+
 
 
 
@@ -750,6 +785,36 @@ app.get('/api/admin/orders', authenticateToken, async (req, res) => {
     }
 });
 
+// Удаление заказа (только для администратора)
+app.delete('/api/admin/orders/:order_id', authenticateToken, async (req, res) => {
+    const { order_id } = req.params;
+
+    try {
+        // Проверка прав администратора
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Доступ запрещен' });
+        }
+
+        // Проверка, существует ли заказ
+        const orderResult = await db.query('SELECT * FROM orders WHERE id = $1', [order_id]);
+        if (orderResult.rows.length === 0) {
+            return res.status(404).json({ message: 'Заказ не найден' });
+        }
+
+        // Удаление связанных элементов заказа (order_items), если они есть
+        await db.query('DELETE FROM order_items WHERE order_id = $1', [order_id]);
+
+        // Удаление самого заказа
+        await db.query('DELETE FROM orders WHERE id = $1', [order_id]);
+
+        res.status(200).json({ message: 'Заказ успешно удален' });
+    } catch (err) {
+        console.error('Ошибка при удалении заказа:', err);
+        res.status(500).json({ message: 'Ошибка сервера при удалении заказа' });
+    }
+});
+
+
 app.patch('/api/admin/orders/:order_id/status', authenticateToken, async (req, res) => {
     const { order_id } = req.params;
     const { status_id, cancel_comment } = req.body;  // Получаем статус и комментарий (если есть)
@@ -777,7 +842,6 @@ app.patch('/api/admin/orders/:order_id/status', authenticateToken, async (req, r
         res.status(500).json({ message: 'Ошибка сервера' });
     }
 });
-
 
 
 // Добавление товара в избранное

@@ -78,6 +78,16 @@ function Catalog() {
     }
   }, [selectedCategory]);
 
+  useEffect(() => {
+  const openBrand = queryParams.get('openBrandFilter');
+  if (openBrand === 'true') {
+    setActiveFilter('brand');
+    // Также сбрасываем параметр, чтобы он не мешал при следующих заходах (необязательно)
+    queryParams.delete('openBrandFilter');
+    navigate('/catalog', { replace: true }); // удаляем параметр из URL
+  }
+}, []); // выполняется один раз при монтировании
+
   // Загрузка типов при выборе категории и пола (selectedCategory, selectedGender из URL)
   useEffect(() => {
     if (selectedCategory && selectedGender) {
@@ -225,7 +235,7 @@ function Catalog() {
     ...prev,
     [product.id]: false, // Сбрасываем анимацию для текущего товара
   }));
-    }, 1000);
+    }, 1500);
 
   try {
     if (isFavorite(product.id)) {

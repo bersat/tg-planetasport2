@@ -35,8 +35,7 @@ function Sidebar({ isOpen, onClose }) {
         <nav>
           <ul className="sidebar-links">
             <li><Link to="/catalog" onClick={onClose}>Каталог</Link></li>
-            <li><Link to="/brands" onClick={onClose}>Бренды</Link></li>
-            <li><Link to="/promotions" onClick={onClose}>Акции</Link></li>
+            <li><Link to="/catalog?openBrandFilter=true" onClick={onClose}>Бренды</Link></li>
             <li>
               <button onClick={handleToggleSubLinks} className="customers-btn">
                 Покупателям

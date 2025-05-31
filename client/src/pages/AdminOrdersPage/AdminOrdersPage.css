@@ -51,6 +51,7 @@
   display: flex;
   gap: 15px;
   margin-top: 10px;
+  flex-wrap: wrap; /* Делаем возможным перенос кнопок на мобильных */
 }
 
 /* Кнопка просмотра заказа */
@@ -63,6 +64,8 @@
   cursor: pointer;
   font-weight: bold;
   transition: background-color 0.2s ease;
+  width: auto;
+  min-width: 120px; /* Минимальная ширина кнопки */
 }
 
 .actions button.view-order:hover {
@@ -79,6 +82,8 @@
   cursor: pointer;
   font-weight: bold;
   transition: background-color 0.2s ease;
+  width: auto;
+  min-width: 120px; /* Минимальная ширина кнопки */
 }
 
 .actions button.status:hover {
@@ -95,8 +100,50 @@
   cursor: pointer;
   font-weight: bold;
   transition: background-color 0.2s ease;
+  width: auto;
+  min-width: 120px; /* Минимальная ширина кнопки */
 }
 
 .actions button.delete-order:hover {
   background-color: #d32f2f;
+}
+
+/* Медиазапросы для мобильных устройств */
+@media (max-width: 767px) {
+  .admin-orders {
+    margin-top: 50px; /* Уменьшаем отступ сверху на мобильных */
+    padding: 15px; /* Уменьшаем внутренние отступы */
+  }
+
+  .admin-orders h1 {
+    font-size: 24px; /* Уменьшаем размер заголовка */
+  }
+
+  .order-items h5 {
+    font-size: 18px; /* Уменьшаем размер заголовка для раздела товаров */
+  }
+
+  /* Кнопки действий */
+  .actions {
+    flex-direction: column; /* Кнопки будут располагаться вертикально */
+    gap: 10px;
+  }
+
+  .actions button {
+    padding: 12px 20px; /* Немного увеличиваем отступы в кнопках */
+    font-size: 14px; /* Уменьшаем размер шрифта для мобильных */
+    width: 100%; /* Кнопки займут всю ширину контейнера */
+    min-width: unset; /* Убираем минимальную ширину */
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-orders {
+    margin-top: 30px; /* Еще меньше отступ сверху */
+  }
+
+  .actions button {
+    font-size: 12px; /* Уменьшаем размер шрифта еще больше */
+    padding: 10px 16px; /* Уменьшаем размеры кнопок для очень маленьких экранов */
+  }
 }

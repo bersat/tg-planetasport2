@@ -52,7 +52,7 @@ function AdminOrdersPage() {
     const getStatusName = (statusId) => {
         switch (statusId) {
             case 1:
-                return 'Новый';
+                return 'Просмотрено';
             case 2:
                 return 'В процессе';
             case 3:
@@ -62,9 +62,30 @@ function AdminOrdersPage() {
             case 5:
                 return 'Отменен';
             default:
-                return 'Неизвестен';
+                return 'Новый';
         }
     };
+
+    const handleDeleteOrder = async (orderId) => {
+    if (!window.confirm('Вы уверены, что хотите удалить этот заказ?')) return;
+
+    try {
+        const token = localStorage.getItem('auth_token');
+        await axios.delete(`${API_BASE}/admin/orders/${orderId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        // Обновление состояния
+        setOrders(prevOrders => prevOrders.filter(order => order.order_id !== orderId));
+    } catch (error) {
+        console.error('Ошибка при удалении заказа:', error);
+        alert('Не удалось удалить заказ.');
+    }
+};
+
+
 
     // Функция для изменения статуса заказа
     const handleStatusChange = async (orderId, statusId) => {
@@ -145,19 +166,13 @@ function AdminOrdersPage() {
                             </div>
 
                             <div className="actions">
-                                <button
-                                    className="view-order"
-                                    onClick={() => navigate(`/order/${order.order_id}`)}
-                                >
-                                    Просмотр
-                                </button>
 
                                 {/* Статус может быть изменен с помощью кнопок */}
                                 <button
                                     className="status"
                                     onClick={() => handleStatusChange(order.order_id, 1)} // Новый
                                 >
-                                    Новый
+                                    Просмотрено
                                 </button>
 
                                 <button
@@ -189,9 +204,10 @@ function AdminOrdersPage() {
                                 </button>
 
                                 {/* Дополнительные действия */}
-                                <button className="delete-order">
+                                <button className="delete-order" onClick={() => handleDeleteOrder(order.order_id)}>
                                     Удалить
                                 </button>
+
                             </div>
                         </li>
                     ))}

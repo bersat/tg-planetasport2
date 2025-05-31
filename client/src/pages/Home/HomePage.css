@@ -82,26 +82,22 @@
   margin-top: 20px;
 }
 
-.category-buttons button {
-  padding: 10px 20px;
-  font-size: 16px;
-  border: none;
-  background-color: #333;
-  color: white;
-  cursor: pointer;
-  border-radius: 5px;
-  transition: background-color 0.2s ease;
-  border: 1px solid #4d4b4b;
-}
-
-.category-buttons button:hover {
-  background-color: #555;
-}
-
 /* ============================= */
 /* 📱 Адаптив под мобильные устройства */
 /* ============================= */
 @media (max-width: 768px) {
+
+  .category-card {
+  width: 140px;
+  padding: 10px;
+}
+
+.category-image {
+  width: 60px;
+  height: 60px;
+}
+
+
   .carousel img {
     height: 200px; /* уменьшенная высота на мобильных */
   }
@@ -159,5 +155,38 @@
 .about-section p {
     display: flex;
   padding-bottom: 10px;
+}
+
+/* Новые карточки категорий */
+.category-card {
+  width: 160px;
+  background-color: #4a4a4a;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(39, 39, 39, 0.464);
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  text-align: center;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.category-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.category-image {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
+
+.category-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #eceaea;
 }
 
