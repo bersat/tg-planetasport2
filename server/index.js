@@ -1000,6 +1000,6 @@ app.delete('/api/cart/:id', authenticateToken, async (req, res) => {
 
 // Настройка порта и запуск сервера
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Сервер запущен на порту ${PORT}`);
 });
