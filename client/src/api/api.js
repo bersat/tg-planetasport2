@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Устанавливаем базовый URL для API
-const API_URL = 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL;
 
 // Получение всех категорий
 export const getCategories = async () => {
