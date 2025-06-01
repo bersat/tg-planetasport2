@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import './ProductModal.css';
 import { useCart } from '../../components/CartContext';
@@ -20,7 +20,10 @@ function ProductModal({ productId, onClose }) {
   const [comment, setComment] = useState('');
   const [selectedSize, setSelectedSize] = useState(null);
   const [stock, setStock] = useState(0);
-  const [showForm, setShowForm] = useState(false);
+   const [showForm, setShowForm] = React.useState(false);
+  const formRef = useRef(null);
+  const modalRef = useRef(null); // если нужно скроллить модальное окно
+
 
   const [filters, setFilters] = useState({
     minRating: 0,
@@ -33,6 +36,29 @@ function ProductModal({ productId, onClose }) {
   const [userRole, setUserRole] = useState(null); // добавляем состояние для роли
   const token = localStorage.getItem('auth_token');
   const { addToCart } = useCart();
+
+  // При смене showForm на true — скроллим к форме
+  useEffect(() => {
+    if (showForm && formRef.current) {
+      // Если модальное окно — скроллим именно его (если overflow там)
+      if (modalRef.current) {
+        const modalRect = modalRef.current.getBoundingClientRect();
+        const formRect = formRef.current.getBoundingClientRect();
+
+        // Рассчитаем, сколько нужно прокрутить
+        const scrollTop = modalRef.current.scrollTop;
+        const offset = formRect.top - modalRect.top + scrollTop;
+
+        modalRef.current.scrollTo({
+          top: offset,
+          behavior: 'smooth',
+        });
+      } else {
+        // Если скроллится страница — прокрутка к форме по документу
+        formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  }, [showForm]);
 
   useEffect(() => {
   if (token) {
@@ -249,7 +275,7 @@ function ProductModal({ productId, onClose }) {
         </button>
 
         {showForm && (
-          <div className="review-form">
+          <div className="review-form" ref={formRef}>
             <div className="stars">
               {[1, 2, 3, 4, 5].map(n => (
                 <span key={n}
