@@ -101,10 +101,10 @@ const Register = () => {
 
   return (
     <div className="auth-wrapper">
-      <form className="auth-form" onSubmit={handleSubmit} noValidate>
+      <form className="auth-form" onSubmit={handleSubmit}>
         <h2>Регистрация</h2>
 
-        <label>Введите Фамилию и Имя<span className="required">*</span></label>
+        <label>ВведитеФамилию и Имя<span className="required">*</span></label>
         <input
           name="full_name"
           type="text"
