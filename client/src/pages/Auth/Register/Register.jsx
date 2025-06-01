@@ -108,6 +108,7 @@ const Register = () => {
         <input
           name="full_name"
           type="text"
+          pattern="^([А-ЯЁ][а-яё-]+)\s+([А-ЯЁ][а-яё-]+)(\s+([А-ЯЁ][а-яё-]+))?$"
           required
           onChange={handleChange}
           value={form.full_name}
