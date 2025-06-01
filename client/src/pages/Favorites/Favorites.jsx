@@ -119,45 +119,24 @@ function Favorites() {
         <p className="favorites-message">Ваш список избранных товаров пуст.</p>
       ) : (
         <div>
-          {sliderEnabled ? (
-            <Slider {...settings}>
-              {favorites.map((item) => (
-                <div key={item.id} className="favorite-item">
-                  <img src={item.image_url} alt={item.title} />
-                  <h4>{item.title}</h4>
-                  <p>{item.description}</p>
-                  <span>{item.price} ₽</span>
-                  <div className="favorite-actions">
-                    <button className="details-btn" onClick={() => openProductInModal(item.id)}>
-                      Подробнее
-                    </button>
-                    <div className="remove-icon" onClick={() => removeFromFavorites(item.id)}>
-                      <FaTrash className="icon-remove" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </Slider>
-          ) : (
-            <div className="favorites-row">
-              {favorites.map((item) => (
-                <div key={item.id} className="favorite-item">
-                  <img src={item.image_url} alt={item.title} />
-                  <h4>{item.title}</h4>
-                  <p>{item.description}</p>
-                  <span>{item.price} ₽</span>
-                  <div className="favorite-actions">
-                    <button className="details-btn" onClick={() => openProductInModal(item.id)}>
-                      Подробнее
-                    </button>
-                    <div className="remove-icon" onClick={() => removeFromFavorites(item.id)}>
-                      <FaTrash className="icon-remove" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+        <div className="favorites-carousel">
+  {favorites.map((item) => (
+    <div key={item.id} className="favorite-card">
+      <img src={item.image_url} alt={item.title} />
+      <h4>{item.title}</h4>
+      <p>{item.description}</p>
+      <span>{item.price} ₽</span>
+      <div className="favorite-actions">
+        <button className="details-btn" onClick={() => openProductInModal(item.id)}>
+          Подробнее
+        </button>
+        <div className="remove-icon" onClick={() => removeFromFavorites(item.id)}>
+          <FaTrash className="icon-remove" />
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
           <div className="total">
             <span>Итого: {totalPrice} ₽</span>
             <span>Количество товаров: {totalQuantity}</span>
