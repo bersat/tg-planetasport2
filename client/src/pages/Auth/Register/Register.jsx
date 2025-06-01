@@ -108,7 +108,6 @@ const Register = () => {
         <input
           name="full_name"
           type="text"
-          required
           onChange={handleChange}
           value={form.full_name}
         />
