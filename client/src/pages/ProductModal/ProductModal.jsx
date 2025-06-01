@@ -117,6 +117,13 @@ function ProductModal({ productId, onClose }) {
   const getFirstName = fullName => fullName?.split(' ')[1] || '';
 
   const handleAddToCart = async () => {
+    const isAuthenticated = Boolean(token);
+
+    if (!isAuthenticated) {
+    alert('Пожалуйста, войдите в аккаунт, чтобы добавить товар в корзину.');
+    return;
+  }
+
     if (product.sizes?.length && !selectedSize) {
       alert("Выберите размер");
       return;

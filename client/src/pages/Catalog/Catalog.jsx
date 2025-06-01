@@ -222,6 +222,11 @@ function Catalog() {
   // Проверяем, авторизован ли пользователь через localStorage
     const isAuthenticated = Boolean(localStorage.getItem('auth_token'));
 
+    if (!isAuthenticated) {
+    alert('Пожалуйста, войдите в аккаунт, чтобы добавлять товары в избранное.');
+    return;
+  }
+
     setIsLoading(true);
 
          setIsAnimating((prev) => ({

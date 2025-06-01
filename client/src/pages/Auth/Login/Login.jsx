@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import '../auth.css';
 import { useNavigate, Link } from 'react-router-dom';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -8,6 +9,7 @@ const API_URL = process.env.REACT_APP_API_URL;
 const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [status, setStatus] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -52,7 +54,22 @@ const Login = () => {
         <input name="email" type="email" required onChange={handleChange} value={form.email} />
 
         <label>Пароль<span className="required">*</span></label>
-        <input name="password" type="password" required onChange={handleChange} value={form.password} />
+          <div className="password-wrapper">
+                   <input
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  onChange={handleChange}
+                  value={form.password}
+                  />
+                   <button
+            type="button"
+            className="toggle-password"
+            onClick={() => setShowPassword(prev => !prev)}
+          >
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
+          </button>
+                </div>
 
         <button type="submit">Войти</button>
         <p className="status">{status}</p>

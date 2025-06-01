@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import '../auth.css';
 import { useNavigate, Link } from 'react-router-dom';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import axios from 'axios';
 
 // Регулярные выражения для валидации
-const nameRegex = /^([А-ЯЁ][а-яё]+)(\s[А-ЯЁ][а-яё]+){1,2}$/; // ФИО с заглавными буквами в начале и двумя или тремя словами (Фамилия, Имя, Отчество)
+const nameRegex = /^([А-ЯЁ][а-яё]+)\s([А-ЯЁ][а-яё]+)(\s[А-ЯЁ][а-яё]+)?$/;
+ // ФИО с заглавными буквами в начале и двумя или тремя словами (Фамилия, Имя, Отчество)
 const emailRegex = /^[a-zA-Z0-9._%+-]+@(mail.ru|yandex.ru|gmail.com)$/; // Проверка на почту mail.ru, yandex.ru, gmail.com
 const phoneRegex = /^\+7\d{10}$/; // Проверка на телефон +7 и 10 цифр
 const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{6,}$/; // Пароль (не менее 6 символов, заглавная, спец. символ)
@@ -19,6 +21,7 @@ const Register = () => {
     password: ''
   });
   const [status, setStatus] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -130,13 +133,23 @@ const Register = () => {
         />
 
         <label>Пароль<span className="required">*</span></label>
-        <input
+        <div className="password-wrapper">
+           <input
           name="password"
-          type="password"
+          type={showPassword ? "text" : "password"}
           required
           onChange={handleChange}
           value={form.password}
-        />
+          />
+           <button
+    type="button"
+    className="toggle-password"
+    onClick={() => setShowPassword(prev => !prev)}
+  >
+    {showPassword ? <FaEyeSlash /> : <FaEye />}
+  </button>
+        </div>
+
 
         <button type="submit">Зарегистрироваться</button>
         <p className="status">{status}</p>
