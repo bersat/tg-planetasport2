@@ -5,7 +5,8 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import axios from 'axios';
 
 // Регулярные выражения для валидации
-const nameRegex = /^([А-ЯЁ][а-яё-]+)\s+([А-ЯЁ][а-яё-]+)(?:\s+([А-ЯЁ][а-яё-]+))?$/;
+const nameRegex = /^([А-ЯЁ][а-яё-]+)\s+([А-ЯЁ][а-яё-]+)(\s+([А-ЯЁ][а-яё-]+))?$/;
+
  // ФИО с заглавными буквами в начале и двумя или тремя словами (Фамилия, Имя, Отчество)
 const emailRegex = /^[a-zA-Z0-9._%+-]+@(mail.ru|yandex.ru|gmail.com)$/; // Проверка на почту mail.ru, yandex.ru, gmail.com
 const phoneRegex = /^\+7\d{10}$/; // Проверка на телефон +7 и 10 цифр
@@ -104,10 +105,11 @@ const Register = () => {
       <form className="auth-form" onSubmit={handleSubmit}>
         <h2>Регистрация</h2>
 
-        <label>ВведитеФамилию и Имя<span className="required">*</span></label>
+        <label>Введите: Фамилию и Имя<span className="required">*</span></label>
         <input
           name="full_name"
           type="text"
+          required
           onChange={handleChange}
           value={form.full_name}
         />
