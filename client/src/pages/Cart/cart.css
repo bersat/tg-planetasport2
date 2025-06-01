@@ -11,7 +11,7 @@
 
 /* Заголовок */
 .cart h1 {
-  font-size: 28px;
+  font-size: clamp(22px, 5vw, 32px);
   margin-bottom: 20px;
   color: #ffffff;
 }
@@ -47,14 +47,19 @@
 /* Описание товара */
 .cart-item h4 {
   margin: 0 0 8px;
-  font-size: 18px;
+  font-size: clamp(12px, 4vw, 20px);
   color: #fff;
+  width: 95%;
+  word-break: break-word;
+  line-height: 1.3;
 }
 
 .cart-item p {
   margin: 0 0 6px;
   color: #bbb;
-  font-size: 14px;
+  font-size: clamp(12px, 2.5vw, 16px);
+  line-height: 1.4;
+  word-break: break-word;
 }
 
 .cart-item span {
@@ -62,6 +67,7 @@
   color: #4caf50;
   display: block;
   margin-bottom: 8px;
+  font-size: clamp(14px, 2.8vw, 18px);
 }
 
 /* Количество и кнопки */
@@ -100,7 +106,7 @@
 }
 
 .total span {
-  font-size: 20px;
+  font-size: clamp(16px, 4vw, 22px);
   font-weight: bold;
   color: #fff;
   margin-right: 20px;
@@ -126,8 +132,8 @@
 /* Иконка удаления */
 .remove-icon {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 5px;
+  right: 5px;
   cursor: pointer;
   font-size: 20px;
   color: #ff6b6b;

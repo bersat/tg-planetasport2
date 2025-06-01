@@ -150,9 +150,11 @@ const removeFromCart = async (cartItemId) => {
                   <li key={item.product_id} className="cart-item">
                     <img src={item.image_url} alt={item.title} />
                     <div>
-                      <h4>{item.title}</h4>
+                      <div className='cart-item-info'>
+                         <h4>{item.title}</h4>
                       <p>{item.description}</p>
                       <span>Цена: {item.price} ₽</span>
+                      </div>
                       {item.size && <p>Размер: {item.size}</p>}
                       <p className="quantity">
                         <span className="quantity-circle"></span>
