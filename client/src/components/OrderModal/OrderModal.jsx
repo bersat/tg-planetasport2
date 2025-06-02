@@ -90,7 +90,12 @@ function OrderModal({ cart, onClose }) {
     try {
       // Отправка данных на сервер
       const response = await axios.post(`${API_URL}/api/orders`, orderData);
-      alert(`Ваш заказ №${response.data.orderNumber} оформлен!`);
+       const orderNumber = response.data.orderNumber;
+      alert(`Ваш заказ №${orderNumber} оформлен! Сейчас вы будете перенаправлены на страницу оплаты.`);
+       // Перенаправление на DonationAlerts
+      const paymentUrl = `https://www.donationalerts.com/r/bersat`;
+
+          window.location.href = paymentUrl;
       onClose(); // Закрытие модального окна после успешного оформления
     } catch (error) {
       console.error('Ошибка при оформлении заказа:', error);

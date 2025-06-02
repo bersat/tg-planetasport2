@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Breadcrumbs from '../../components/Breadcrumbs/Breadcrumbs';
 import axios from 'axios';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import FilterWrapper from '../../components/FilterWrapper/FilterWrapper'; // поправь путь, если нужно
 import './catalog.css';
 import ProductModal from '../ProductModal/ProductModal';
@@ -28,6 +28,7 @@ const colorTranslation = {
 };
 
 function Catalog() {
+    const [searchParams] = useSearchParams();
   const [categories, setCategories] = useState([]);
   const [genders, setGenders] = useState([]);
   const [types, setTypes] = useState([]);
@@ -78,15 +79,21 @@ function Catalog() {
     }
   }, [selectedCategory]);
 
-  useEffect(() => {
-  const openBrand = queryParams.get('openBrandFilter');
+ useEffect(() => {
+  const openBrand = searchParams.get('openBrandFilter');
   if (openBrand === 'true') {
     setActiveFilter('brand');
-    // Также сбрасываем параметр, чтобы он не мешал при следующих заходах (необязательно)
-    queryParams.delete('openBrandFilter');
-    navigate('/catalog', { replace: true }); // удаляем параметр из URL
+
+    // Чистим параметр, чтобы не зацикливать открытие фильтра
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('openBrandFilter');
+
+    navigate({
+      pathname: '/catalog',
+      search: newParams.toString()
+    }, { replace: true });
   }
-}, []); // выполняется один раз при монтировании
+}, [searchParams, navigate]); // выполняется один раз при монтировании
 
   // Загрузка типов при выборе категории и пола (selectedCategory, selectedGender из URL)
   useEffect(() => {
