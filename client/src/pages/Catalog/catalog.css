@@ -194,20 +194,20 @@ button.reset:hover {
   outline: none;
 }
 
-/* Для мобильных устройств (адаптивность для фильтров) */
+
 @media (max-width: 768px) {
   .filters-buttons {
-    flex-wrap: nowrap; /* Убираем возможность переноса на новую строку */
-    justify-content: flex-start; /* Выравниваем кнопки по левому краю */
+    flex-wrap: nowrap;
+    justify-content: flex-start;
   }
 
   .filters-buttons p {
-    margin-bottom: 10px; /* Добавляем отступ для текста */
+    margin-bottom: 10px;
   }
 
   .filter-btn {
-    width: auto; /* Убираем фиксированную ширину */
-    margin: 5px 0; /* Убираем боковые отступы */
+    width: auto;
+    margin: 5px 0;
   }
 }
 

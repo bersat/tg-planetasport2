@@ -8,7 +8,6 @@ const db = require('./db'); // PostgreSQL pool
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
-const token = process.env.HTTPAPI;
 
 const transporter = nodemailer.createTransport({
     service: 'gmail', // или любой другой почтовый сервис

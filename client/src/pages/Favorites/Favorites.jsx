@@ -130,8 +130,8 @@ function Favorites() {
         <button className="details-btn" onClick={() => openProductInModal(item.id)}>
           Подробнее
         </button>
-        <div className="remove-icon" onClick={() => removeFromFavorites(item.id)}>
-          <FaTrash className="icon-remove" />
+        <div className="favorites-remove-btn" onClick={() => removeFromFavorites(item.id)}>
+          <FaTrash className="favorites-remove-icon" />
         </div>
       </div>
     </div>

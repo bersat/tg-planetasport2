@@ -155,12 +155,12 @@
 
 @media (max-width: 480px) {
   .admin-orders {
-    margin-top: 30px; /* Еще меньше отступ сверху */
+    margin-top: 30px;
   }
 
   .actions button {
-    font-size: 12px; /* Уменьшаем размер шрифта еще больше */
-    padding: 10px 16px; /* Уменьшаем размеры кнопок для очень маленьких экранов */
+    font-size: 12px;
+    padding: 10px 16px;
   }
 
     .order-item-details {

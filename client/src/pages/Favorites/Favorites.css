@@ -103,12 +103,21 @@
   background-color: #d62828;
 }
 
-.remove-icon {
+.favorites-remove-btn {
+  display: none;
   cursor: pointer;
-  color: #aaa;
 }
 
-.remove-icon:hover {
+.favorite-card:hover .favorites-remove-btn {
+  display: flex;
+}
+
+.favorites-remove-icon {
+  color: #aaa;
+  transition: color 0.3s ease;
+}
+
+.favorites-remove-icon:hover {
   color: #ff4d4d;
 }
 

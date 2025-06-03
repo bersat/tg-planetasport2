@@ -26,7 +26,7 @@ function Cart() {
     }
   };
 
-  // Получаем данные о наличии для каждого товара в корзине
+  // Получение данных о наличии для каждого товара в корзине
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
 
@@ -39,14 +39,14 @@ function Cart() {
         });
         setCart(response.data);
 
-        // Получаем stockData для каждого товара в корзине
+        // Получение stockData для каждого товара в корзине
         const stockDataPromises = response.data.map(item =>
           fetchStockData(item.product_id)
         );
 
         const stockQuantities = await Promise.all(stockDataPromises);
 
-        // Обновляем stockData состоянием, где ключ - product_id, а значение - quantity
+        // Обновляю stockData состоянием, где ключ - product_id, а значение - quantity
         const stockObj = response.data.reduce((acc, item, index) => {
           acc[item.product_id] = stockQuantities[index];
           return acc;
