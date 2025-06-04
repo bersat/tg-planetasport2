@@ -104,7 +104,7 @@
 }
 
 .favorites-remove-btn {
-  display: none;
+  display: flex;
   cursor: pointer;
 }
 
