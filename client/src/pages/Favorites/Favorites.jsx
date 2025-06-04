@@ -136,7 +136,10 @@ function Favorites() {
       </div>
     </div>
   ))}
-</div>
+            </div>
+
+
+            <h1>vevdvsd</h1>
           <div className="total">
             <span>Итого: {totalPrice} ₽</span>
             <span>Количество товаров: {totalQuantity}</span>
