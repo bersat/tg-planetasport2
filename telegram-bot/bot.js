@@ -2,7 +2,7 @@ const { Telegraf, session } = require('telegraf');
 
 // === Токен и ID администратора ===
 const bot = new Telegraf('7685888546:AAGFM9y_i8i-B7cYY46Sy0iS9Xj5OolHMSE'); // Токен бота
-const ADMIN_ID = 1875616267; // Твой Telegram user ID
+const ADMIN_ID = 1875616267; // Мой Telegram user ID
 
 // === Подключение сессии ===
 bot.use(session({ defaultSession: () => ({}) }));
